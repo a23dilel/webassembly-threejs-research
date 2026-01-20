@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    // This helps editor to locate three.js files for enhanced auto-completion
+    "paths": {
+      "three/webgpu": ["./node_modules/three/build/three.webgpu.js"],
+      "three/tsl": ["./node_modules/three/build/three.tsl.js"],
+    },
+  }
+}
