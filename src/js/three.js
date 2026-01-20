@@ -1,4 +1,10 @@
 import * as THREE from 'three';
+import { PARAMS } from './gui';
+
+let lastTime = performance.now();
+let frames = 0;
+let fps = 0;
+const RESPONSIVE_FPS = 1000;
 
 function initThreeJS() {
     // Set the scene size
@@ -34,6 +40,21 @@ function initThreeJS() {
         cube.rotation.y += 0.01;
 
         renderer.render( scene, camera );
+
+        // FPS calculation
+        frames++;
+        const now = performance.now();
+        if (now - lastTime >= RESPONSIVE_FPS) {
+            fps = Math.round((frames * 1000) / (now - lastTime));
+            frames = 0;
+            lastTime = now;
+        }
+
+        PARAMS.fps = fps;
+        PARAMS.calls = renderer.info.render.calls;
+        PARAMS.triangles = renderer.info.render.triangles;
+        PARAMS.geometries = renderer.info.memory.geometries;
+        PARAMS.textures = renderer.info.memory.textures;
     }
 }
 
