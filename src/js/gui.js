@@ -1,6 +1,9 @@
 import GUI from 'lil-gui';
+import { loadFromLocalStorage, removeLocalStorage, saveToLocalStorage } from './localStorage';
 
 let gui; 
+let loadButton;
+let deleteButton;
 
 const PARAMS = {
     // Performance
@@ -15,7 +18,24 @@ const PARAMS = {
     
     // Geometry
     cubeColor: 0x00ff00,
-    wireframe: false
+    wireframe: false,
+
+    // Presets
+    savePreset() {
+        saveToLocalStorage( 'preset', gui.save() );
+        loadButton.enable();
+        deleteButton.enable();
+    },
+    loadPreset() {
+        gui.load(loadFromLocalStorage( 'preset' ));
+    },
+    deleteAllPresets() {
+        if (confirm( 'Do you want to delete all presets?' )) {
+            removeLocalStorage( 'preset' );
+            loadButton.disable();
+            deleteButton.disable();
+        } 
+    }
 }
 
 function initGUI() {
@@ -36,6 +56,22 @@ function initGUI() {
     const GEOMETRY_FOLDER = gui.addFolder( 'Geometry' );
     GEOMETRY_FOLDER.addColor( PARAMS, 'cubeColor' ).name( 'Cube color' );
     GEOMETRY_FOLDER.add( PARAMS, 'wireframe' );
+    
+    const PRESETS_FOLDER = gui.addFolder( 'Presets' );
+    PRESETS_FOLDER.add( PARAMS, 'savePreset' ).name( 'Save preset' );
+    loadButton = PRESETS_FOLDER.add( PARAMS, 'loadPreset' ).name( 'Load preset' );
+    deleteButton = PRESETS_FOLDER.add( PARAMS, 'deleteAllPresets' ).name( 'Delete all presets' );
+    
+    let preset = loadFromLocalStorage( 'preset' )
+
+    if (preset != null) {
+        loadButton.enable();
+        deleteButton.enable();
+        gui.load(preset);
+    } else {
+        loadButton.disable();
+        deleteButton.disable();
+    }
 }
 
 export { PARAMS, initGUI }
