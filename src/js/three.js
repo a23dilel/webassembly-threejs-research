@@ -66,11 +66,39 @@ function initThreeJS() {
     const POINTS = new THREE.Points(GEOMETRY, MATERIAL);
     scene.add(POINTS);
 
+    const BOUNDS = POS_SCALE / 2;
+
+    function simulateJS(pos, vel, count, deltaTime) {
+        for (let i = 0; i < count; i++) {
+            const INDEX = i * COMPONENTS_PER_PARTICLE;
+
+            // Update each particle's xyz at the same time 
+            pos[INDEX] += vel[INDEX] * deltaTime; // x
+            pos[INDEX + 1] += vel[INDEX + 1] * deltaTime; // y
+            pos[INDEX + 2] += vel[INDEX + 2] * deltaTime; // z
+
+            // Check particle's collision xyz
+            for (let j = 0; j < COMPONENTS_PER_PARTICLE; j++) {
+                const position = pos[INDEX + j];
+
+                // if particle's xyz hit the box border, then change it directions
+                if (position < -BOUNDS || position > BOUNDS) {
+                    pos[INDEX + j] = Math.max(-BOUNDS, Math.min(BOUNDS, position))
+                    vel[INDEX + j] *= -0.8;
+                }
+            }
+        }
+    }
+
     function animate() {
         cube.rotation.x += 0.01;
         cube.rotation.y += 0.01;
         cube.material.color.set(PARAMS.cubeColor);
         cube.material.wireframe = PARAMS.wireframe;
+
+        simulateJS(POSITION_ARRAY, VELOCITY_ARRAY, PARTICLE_COUNT, 1/60);
+
+        GEOMETRY.attributes.position.needsUpdate = true;
 
         renderer.render( scene, camera );
 
