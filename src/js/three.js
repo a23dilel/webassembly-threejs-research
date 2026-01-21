@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PARAMS } from './gui';
+import { Particles } from './particles';
 
 let lastTime = performance.now();
 let frames = 0;
@@ -35,60 +36,8 @@ function initThreeJS() {
     const cube = new THREE.Mesh( boxGeometry, material );
     scene.add( cube );
     
-    // Particles
-    const PARTICLE_COUNT = 100;
-    const COMPONENTS_PER_PARTICLE = 3; // x, y, z
-
-    const ARRAY_LENGTH = PARTICLE_COUNT * COMPONENTS_PER_PARTICLE;
-
-    const POINT_SIZE = 0.5;
-    const POINT_COLOR = 0x00ff00;
-    
-    const POSITION_ARRAY = new Float32Array(ARRAY_LENGTH);
-    const VELOCITY_ARRAY = new Float32Array(ARRAY_LENGTH);
-
-    const POS_SCALE = 50;
-    const VEL_SCALE = 2;
-    // Set a random number in each posistion and velocity
-    for (let i = 0; i < ARRAY_LENGTH; i++) {
-        // Range: -0.5, +0.5
-        const POS_RANGE = (Math.random() - 0.5); 
-        const VEL_RANGE = (Math.random() - 0.5);
-            
-        POSITION_ARRAY[i] = POS_RANGE * POS_SCALE;
-        VELOCITY_ARRAY[i] = VEL_RANGE * VEL_SCALE;
-    }
-    
-    const GEOMETRY = new THREE.BufferGeometry();
-    GEOMETRY.setAttribute('position', new THREE.BufferAttribute(POSITION_ARRAY, 3));
-
-    const MATERIAL = new THREE.PointsMaterial({ size: POINT_SIZE, color: POINT_COLOR  });
-    const POINTS = new THREE.Points(GEOMETRY, MATERIAL);
-    scene.add(POINTS);
-
-    const BOUNDS = POS_SCALE / 2;
-
-    function simulateJS(pos, vel, count, deltaTime) {
-        for (let i = 0; i < count; i++) {
-            const INDEX = i * COMPONENTS_PER_PARTICLE;
-
-            // Update each particle's xyz at the same time 
-            pos[INDEX] += vel[INDEX] * deltaTime; // x
-            pos[INDEX + 1] += vel[INDEX + 1] * deltaTime; // y
-            pos[INDEX + 2] += vel[INDEX + 2] * deltaTime; // z
-
-            // Check particle's collision xyz
-            for (let j = 0; j < COMPONENTS_PER_PARTICLE; j++) {
-                const position = pos[INDEX + j];
-
-                // if particle's xyz hit the box border, then change it directions
-                if (position < -BOUNDS || position > BOUNDS) {
-                    pos[INDEX + j] = Math.max(-BOUNDS, Math.min(BOUNDS, position))
-                    vel[INDEX + j] *= -0.8;
-                }
-            }
-        }
-    }
+    const particles = new Particles();
+    scene.add( particles.init() );
 
     function animate() {
         cube.rotation.x += 0.01;
@@ -96,9 +45,7 @@ function initThreeJS() {
         cube.material.color.set(PARAMS.cubeColor);
         cube.material.wireframe = PARAMS.wireframe;
 
-        simulateJS(POSITION_ARRAY, VELOCITY_ARRAY, PARTICLE_COUNT, 1/60);
-
-        GEOMETRY.attributes.position.needsUpdate = true;
+        particles.update();
 
         renderer.render( scene, camera );
 
