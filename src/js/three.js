@@ -44,7 +44,7 @@ function initThreeJS() {
         cube.material.color.set(PARAMS.cubeColor);
         cube.material.wireframe = PARAMS.wireframe;
 
-let deltaTime = clock.getDelta();
+        let deltaTime = clock.getDelta();
 
         particles.update(deltaTime);
         cameraController.update(deltaTime);
@@ -65,6 +65,10 @@ let deltaTime = clock.getDelta();
         PARAMS.triangles = renderer.info.render.triangles;
         PARAMS.geometries = renderer.info.memory.geometries;
         PARAMS.textures = renderer.info.memory.textures;
+        
+        if (performance.memory) {
+            PARAMS.JsHeapMB = performance.memory.usedJSHeapSize / 1048576;
+        }
     }
 }
 
