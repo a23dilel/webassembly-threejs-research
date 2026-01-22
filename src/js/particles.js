@@ -3,7 +3,7 @@ import * as THREE from 'three';
 class Particles {
     static COMPONENTS_PER_PARTICLE = 3;
 
-    constructor(particleCount = 100, pointSize = 0.5, pointColor = 0x00ff00, positionBounds = 50, velocitySpeed = 5) {
+    constructor({ particleCount = 100, pointSize = 0.5, pointColor = 0x00ff00, positionBounds = 50, velocitySpeed = 5 } = {} ) {
         this.particleCount = particleCount;
         this.pointSize = pointSize;
         this.pointColor = pointColor;
@@ -36,7 +36,7 @@ class Particles {
         this.mesh = new THREE.Points(this.geometry, MATERIAL);
     }
 
-    update(deltaTime = 1/60) {
+    update(deltaTime) {
         for (let i = 0; i < this.particleCount; i++) {
             const INDEX = i * Particles.COMPONENTS_PER_PARTICLE;
 

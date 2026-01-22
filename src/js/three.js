@@ -46,7 +46,7 @@ function initThreeJS() {
 
 let deltaTime = clock.getDelta();
 
-        particles.update();
+        particles.update(deltaTime);
         cameraController.update(deltaTime);
 
         renderer.render( scene, cameraController.camera );
