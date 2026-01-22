@@ -19,44 +19,45 @@ class Particles {
     }
       
     init() {
+        const {positionArray, velocityArray, arrayLength, positionBounds, velocitySpeed, pointSize, pointColor} = this;
+
         // Set a random number in each position and velocity
-        for (let i = 0; i < this.arrayLength; i++) {
+        for (let i = 0; i < arrayLength; i++) {
             // Range: -0.5, +0.5
-            const POS_RANGE = (Math.random() - 0.5); 
-            const VEL_RANGE = (Math.random() - 0.5);
+            const posRange = (Math.random() - 0.5); 
+            const velRange = (Math.random() - 0.5);
                 
-            this.positionArray[i] = POS_RANGE * this.positionBounds;
-            this.velocityArray[i] = VEL_RANGE * this.velocitySpeed;
+            positionArray[i] = posRange * positionBounds;
+            velocityArray[i] = velRange * velocitySpeed;
         }
 
         this.geometry = new THREE.BufferGeometry();
-        this.geometry.setAttribute('position', new THREE.BufferAttribute(this.positionArray, 3));
+        this.geometry.setAttribute('position', new THREE.BufferAttribute(positionArray, 3));
 
-        const MATERIAL = new THREE.PointsMaterial({ size: this.pointSize, color: this.pointColor });
-        this.mesh = new THREE.Points(this.geometry, MATERIAL);
+        const material = new THREE.PointsMaterial({ size: pointSize, color: pointColor });
+        this.mesh = new THREE.Points(this.geometry, material);
     }
 
     update(deltaTime) {
-        for (let i = 0; i < this.particleCount; i++) {
-            const INDEX = i * Particles.COMPONENTS_PER_PARTICLE;
+        const {particleCount, positionArray, velocityArray} = this;
+        const bounds = this.boxBounds;
 
-            let positionArray = this.positionArray;
-            let velocityArray = this.velocityArray;
+        for (let i = 0; i < particleCount; i++) {
+            const index = i * Particles.COMPONENTS_PER_PARTICLE;
 
             // Update each particle's xyz at the same time 
-            positionArray[INDEX] += velocityArray[INDEX] * deltaTime; // x
-            positionArray[INDEX + 1] += velocityArray[INDEX + 1] * deltaTime; // y
-            positionArray[INDEX + 2] += velocityArray[INDEX + 2] * deltaTime; // z
+            positionArray[index] += velocityArray[index] * deltaTime; // x
+            positionArray[index + 1] += velocityArray[index + 1] * deltaTime; // y
+            positionArray[index + 2] += velocityArray[index + 2] * deltaTime; // z
 
             // Check particle's collision xyz
             for (let j = 0; j < Particles.COMPONENTS_PER_PARTICLE; j++) {
-                const position = this.positionArray[INDEX + j];
+                const position = positionArray[index + j];
 
                 // if particle's xyz hit the box border, then change it directions
-                const BOUNDS = this.boxBounds;
-                if (position < -BOUNDS || position > BOUNDS) {
-                    positionArray[INDEX + j] = Math.max(-BOUNDS, Math.min(BOUNDS, position))
-                    velocityArray[INDEX + j] *= -0.8;
+                if (position < -bounds || position > bounds) {
+                    positionArray[index + j] = Math.max(-bounds, Math.min(bounds, position))
+                    velocityArray[index + j] *= -0.8;
                 }
             }
         }
