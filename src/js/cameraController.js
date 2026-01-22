@@ -12,7 +12,9 @@ class CameraController {
             forward: false,
             backward: false,
             right: false,
-            left: false
+            left: false,
+            up: false,
+            down: false
         }
 
         this.camera = new THREE.PerspectiveCamera(this.fov, this.aspect, this.near, this.far);
@@ -50,6 +52,12 @@ class CameraController {
                 case 'KeyA':
                     move.left = true;
                     break;
+                case 'Space':
+                    move.up = true;
+                    break;
+                case 'KeyC':
+                    move.down = true;
+                    break;
             }
         });
 
@@ -67,12 +75,18 @@ class CameraController {
                 case 'KeyA':
                     move.left = false;
                     break;
+                case 'Space':
+                    move.up = false;
+                    break;
+                case 'KeyC':
+                    move.down = false;
+                    break;
             }
         });
     }
 
     update(deltaTime) {
-        const { move, controls } = this;
+        const { move, controls, camera } = this;
         let speed = this.speed * deltaTime;
 
         if(move.forward) {
@@ -86,6 +100,12 @@ class CameraController {
         }
         if(move.left) {
             controls.moveRight(-speed);
+        }
+        if(move.up) {
+            camera.position.y += speed;
+        }
+        if(move.down) {
+            camera.position.y -= speed;
         }
     }
 }
