@@ -42,22 +42,22 @@ class Particles {
         const {particleCount, positionArray, velocityArray} = this;
         const bounds = this.boxBounds;
 
+        // Loop through each particle
         for (let i = 0; i < particleCount; i++) {
-            const index = i * Particles.COMPONENTS_PER_PARTICLE;
+            const particleIndex = i * Particles.COMPONENTS_PER_PARTICLE;
 
-            // Update each particle's xyz at the same time 
-            positionArray[index] += velocityArray[index] * deltaTime; // x
-            positionArray[index + 1] += velocityArray[index + 1] * deltaTime; // y
-            positionArray[index + 2] += velocityArray[index + 2] * deltaTime; // z
-
-            // Check particle's collision xyz
+            // Loop through x, y, z from particle
             for (let j = 0; j < Particles.COMPONENTS_PER_PARTICLE; j++) {
-                const position = positionArray[index + j];
+                
+                // Move particle's xyz
+                positionArray[particleIndex + j] += velocityArray[particleIndex + j] * deltaTime;
+                
+                const particlePos = positionArray[particleIndex + j];
 
-                // if particle's xyz hit the box border, then change it directions
-                if (position < -bounds || position > bounds) {
-                    positionArray[index + j] = Math.max(-bounds, Math.min(bounds, position))
-                    velocityArray[index + j] *= -0.8;
+                // If particle's xyz hits box border, then reverse direction
+                if (particlePos < -bounds || particlePos > bounds) {
+                    positionArray[particleIndex + j] = Math.max(-bounds, Math.min(bounds, particlePos))
+                    velocityArray[particleIndex + j] *= -1;
                 }
             }
         }
