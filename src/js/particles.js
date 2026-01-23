@@ -19,7 +19,12 @@ class Particles {
     }
       
     init() {
-        const {positionArray, velocityArray, arrayLength, positionBounds, velocitySpeed, pointSize, pointColor} = this;
+        this.generateParticles();
+        this.createGeometry();
+    }
+
+    generateParticles() {
+        const {positionArray, velocityArray, arrayLength, positionBounds, velocitySpeed} = this;
 
         // Set a random number in each position and velocity
         for (let i = 0; i < arrayLength; i++) {
@@ -30,6 +35,10 @@ class Particles {
             positionArray[i] = posRange * positionBounds;
             velocityArray[i] = velRange * velocitySpeed;
         }
+    }
+
+    createGeometry() {
+        const {positionArray, pointSize, pointColor} = this;
 
         this.geometry = new THREE.BufferGeometry();
         this.geometry.setAttribute('position', new THREE.BufferAttribute(positionArray, 3));
