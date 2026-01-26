@@ -1,5 +1,6 @@
 import GUI from 'lil-gui';
 import { loadFromLocalStorage, removeLocalStorage, saveToLocalStorage } from './localStorage';
+import { createGeometry } from './three';
 
 let gui; 
 let loadButton;
@@ -58,9 +59,32 @@ function initGUI() {
     GPU_MEMORY_FOLDER.add( PARAMS, 'geometries' ).listen().name( 'Geometries' );
     GPU_MEMORY_FOLDER.add( PARAMS, 'textures' ).listen().name( 'Textures' );
     
-    const GEOMETRY_FOLDER = gui.addFolder( 'Geometry' );
-    GEOMETRY_FOLDER.addColor( PARAMS, 'cubeColor' ).name( 'Cube color' );
-    GEOMETRY_FOLDER.add( PARAMS, 'wireframe' );
+    const PARTICLES_GEOMETRY_FOLDER = gui.addFolder( 'Particles Geometry' );
+    PARTICLES_GEOMETRY_FOLDER.add( PARAMS, 'type', [ 'points', 'cubes' ] ).name( 'Type' ).onChange(() => {
+        createGeometry(PARAMS);
+    });
+
+    PARTICLES_GEOMETRY_FOLDER.add( PARAMS, 'count' ).name( 'Count' ).onChange(() => {
+        createGeometry(PARAMS);
+    });
+
+    PARTICLES_GEOMETRY_FOLDER.add( PARAMS, 'size' ).name( 'Size' ).onChange(() => {
+        createGeometry(PARAMS);
+    });
+
+    PARTICLES_GEOMETRY_FOLDER.addColor( PARAMS, 'color' ).name( 'Color' ).onChange(() => {
+        createGeometry(PARAMS);
+    });
+
+    PARTICLES_GEOMETRY_FOLDER.add( PARAMS, 'posBounds' ).name( 'Position Bounds' ).onChange(() => {
+        createGeometry(PARAMS);
+    });
+
+    PARTICLES_GEOMETRY_FOLDER.add( PARAMS, 'speed' ).name( 'Speed' ).onChange(() => {
+        createGeometry(PARAMS);
+    });
+    
+    PARTICLES_GEOMETRY_FOLDER.add( PARAMS, 'wireframe' ).name( 'Wireframe' );
     
     const PRESETS_FOLDER = gui.addFolder( 'Presets' );
     PRESETS_FOLDER.add( PARAMS, 'savePreset' ).name( 'Save preset' );
