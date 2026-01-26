@@ -16,8 +16,13 @@ const PARAMS = {
     geometries: 0,
     textures: 0,
     
-    // Geometry
-    cubeColor: 0x00ff00,
+    // Particles Geometry
+    type: 'points',
+    count: 100,
+    size: 0.5,
+    color: 0x00ff00,
+    posBounds: 50,
+    speed: 5,
     wireframe: false,
 
     // Presets
@@ -47,11 +52,11 @@ function initGUI() {
     PERF_FOLDER.add( PARAMS, 'fps' ).listen();
     PERF_FOLDER.add( PARAMS, 'calls' ).listen();
     PERF_FOLDER.add( PARAMS, 'triangles' ).listen();
-    PERF_FOLDER.add(PARAMS, 'JsHeapMB').listen();
+    PERF_FOLDER.add( PARAMS, 'JsHeapMB').listen();
     
     const GPU_MEMORY_FOLDER = gui.addFolder( 'GPU Memory' );
-    GPU_MEMORY_FOLDER.add( PARAMS, 'geometries' ).listen();
-    GPU_MEMORY_FOLDER.add( PARAMS, 'textures' ).listen();
+    GPU_MEMORY_FOLDER.add( PARAMS, 'geometries' ).listen().name( 'Geometries' );
+    GPU_MEMORY_FOLDER.add( PARAMS, 'textures' ).listen().name( 'Textures' );
     
     const GEOMETRY_FOLDER = gui.addFolder( 'Geometry' );
     GEOMETRY_FOLDER.addColor( PARAMS, 'cubeColor' ).name( 'Cube color' );
