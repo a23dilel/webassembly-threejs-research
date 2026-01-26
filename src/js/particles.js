@@ -55,13 +55,17 @@ class Particles {
     
             for (let i = 0; i < this.mesh.count; i++) {
                 const particleIndex = i * Particles.COMPONENTS_PER_PARTICLE;
-    
+                
                 this.object3D.position.fromArray(positionArray, particleIndex);
                 this.object3D.updateMatrix();
                 this.mesh.setMatrixAt(i, this.object3D.matrix);
             }
         }
+    }
 
+    disposeGeometry() {
+        this.mesh.geometry.dispose();
+        this.mesh.material.dispose();
     }
 
     update(deltaTime) {
@@ -81,7 +85,7 @@ class Particles {
             for (let j = 0; j < Particles.COMPONENTS_PER_PARTICLE; j++) {
                 
                 // Move particle's xyz
-                    positionArray[particleIndex + j] += velocityArray[particleIndex + j] * deltaTime;
+                positionArray[particleIndex + j] += velocityArray[particleIndex + j] * deltaTime;
 
                 if (type == 'cubes') {
                     this.object3D.position.fromArray(positionArray, particleIndex);
