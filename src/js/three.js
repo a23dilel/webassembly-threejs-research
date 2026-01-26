@@ -8,12 +8,28 @@ let frames = 0;
 let fps = 0;
 const RESPONSIVE_FPS = 1000;
 
+let scene;
+let particles; 
+
+function createGeometry(params = {}) {
+    const {type, count, size, color, posBounds, speed} = params;
+    
+    scene = new THREE.Scene();
+    
+    if (particles) {
+        scene.remove(particles.mesh);
+        particles.disposeGeometry?.();
+    } 
+    particles = new Particles({ type, count, size, color, posBounds, speed });
+    scene.add( particles.mesh );
+}
+
 function initThreeJS() {
     // Set the scene size
     const WIDTH = window.innerWidth;
     const HEIGHT = window.innerHeight;
 
-    const scene = new THREE.Scene();
+    scene = new THREE.Scene();
 
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize( WIDTH, HEIGHT, true);
@@ -24,8 +40,7 @@ function initThreeJS() {
     cameraController.bindEvents();
     cameraController.camera.position.z = 60;
     
-    const particles = new Particles();
-    scene.add( particles.mesh );
+    createGeometry(PARAMS);
 
     const clock = new THREE.Clock();
     function animate() {
@@ -57,4 +72,4 @@ function initThreeJS() {
     }
 }
 
-export { initThreeJS }
+export { initThreeJS, createGeometry }
