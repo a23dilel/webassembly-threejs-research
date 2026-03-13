@@ -10,42 +10,50 @@ class DebugGUI {
 
         this.PARAMS = {
             performance: {
-                fps: 0,
-                calls: 0,
-                triangles: 0,
-                JsHeapMB: 0,
+                display: {
+                    fps: 0,
+                    calls: 0,
+                    triangles: 0,
+                    JsHeapMB: 0
+                }
             },
 
             gpuMemory: {
-                geometries: 0,
-                textures: 0
+                display: {
+                    geometries: 0,
+                    textures: 0
+                }
             },
             
             particlesGeometry: {
-                type: 'points',
-                count: 100,
-                size: 0.5,
-                color: 0x00ff00,
-                posBounds: 50,
-                speed: 5,
-                wireframe: false
+                input: {
+                    type: 'points',
+                    count: 100,
+                    size: 0.5,
+                    color: 0x00ff00,
+                    posBounds: 50,
+                    speed: 5,
+                    wireframe: false
+                }
             },
             
             presets: {
-                savePreset: () => {
-                    saveToLocalStorage( 'preset', this.gui.save() );
-                    this.loadButton.enable();
-                    this.deleteButton.enable();
-                },
-                loadPreset: () => {
-                    this.gui.load(loadFromLocalStorage( 'preset' ));
-                },
-                deleteAllPresets: () => {
-                    if (confirm( 'Do you want to delete all presets?' )) {
-                        removeLocalStorage( 'preset' );
-                        this.loadButton.disable();
-                        this.deleteButton.disable();
-                    } 
+                button: {
+                    savePreset: () => {
+                        saveToLocalStorage( 'preset', this.gui.save() );
+                        this.loadButton.enable();
+                        this.deleteButton.enable();
+                    },
+                    loadPreset: () => {
+                        this.gui.load(loadFromLocalStorage( 'preset' ));
+                    },
+                    deleteAllPresets: () => {
+                        if (confirm( 'Do you want to delete all presets?' )) {
+                            removeLocalStorage( 'preset' );
+                            this.loadButton.disable();
+                            this.deleteButton.disable();
+                        } 
+                    }
                 }
             }
         }
@@ -54,49 +62,55 @@ class DebugGUI {
     init() {
         let { gui } = this;
         const { PARAMS } = this;
+        
+        let method;
+        let params;
 
         for (let propertyName in PARAMS) {            
             const folder = gui.addFolder( propertyName );
 
-            if (propertyName == "particlesGeometry") {
-                for (let key in PARAMS[propertyName]) {
+            for (let type in PARAMS[propertyName]) {
+                for (let key in PARAMS[propertyName][type]) {
                     const capitalize = key.charAt(0).toLocaleUpperCase() + key.substring(1);
-                    
-                    if (key == "type") {
-                        folder.add( PARAMS[propertyName], key, [ 'points', 'cubes' ] ).name(capitalize).onChange(() => {
-                            createGeometry(PARAMS[propertyName]);
-                        });
-                    } else if (key == "color") {
-                        folder.addColor( PARAMS[propertyName], key ).name(capitalize).onChange(() => {
-                            createGeometry(PARAMS[propertyName]);
-                        });
+
+                    if (key == "color") {
+                        method = "addColor";
                     } else {
-                        folder.add( PARAMS[propertyName], key ).name(capitalize).onChange(() => {
-                            createGeometry(PARAMS[propertyName]);
+                        method = "add";
+                    }
+
+                    if (key == "type") {
+                        params = [PARAMS[propertyName][type], key, ['points', 'cubes']];
+                    } else {
+                        params = [PARAMS[propertyName][type], key];
+                    }
+                    
+                    let control = folder[method](...params).name(capitalize);
+                    
+                    if (type == "input") {
+                        control.onChange(() => {
+                            createGeometry(PARAMS[propertyName][type]);
                         });
                     }
-                }
-            } else if (propertyName == "presets") {
-                folder.add( PARAMS[propertyName], 'savePreset' ).name( 'Save preset' );
-                this.loadButton = folder.add( PARAMS[propertyName], 'loadPreset' ).name( 'Load preset' );
-                this.deleteButton = folder.add( PARAMS[propertyName], 'deleteAllPresets' ).name( 'Delete all presets' );
-
-                let preset = loadFromLocalStorage( 'preset' )
-
-                if (preset != null) {
-                    this.loadButton.enable();
-                    this.deleteButton.enable();
-                    gui.load(preset);
-                } else {
-                    this.loadButton.disable();
-                    this.deleteButton.disable();
-                }
-            } else {
-                for (let key in PARAMS[propertyName]) {
-                    const capitalize = key.charAt(0).toLocaleUpperCase() + key.substring(1);
-                    folder.add( PARAMS[propertyName], key ).listen().name(capitalize);
+                    
+                    if (key == "loadPreset") {
+                        this.loadButton = control;
+                    } else if (key == "deleteAllPresets") {
+                        this.deleteButton = control;
+                    }
                 }
             }
+        }
+
+        let preset = loadFromLocalStorage( 'preset' )
+
+        if (preset != null) {
+            this.loadButton.enable();
+            this.deleteButton.enable();
+            gui.load(preset);
+        } else {
+            this.loadButton.disable();
+            this.deleteButton.disable();
         }
     }
 }
