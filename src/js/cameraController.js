@@ -1,13 +1,11 @@
-import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
 class CameraController {
-    constructor({ fov = 75, aspect = 1920/1080, near = 0.1, far = 1000, speed = 10, renderer } = {} ) {
-        this.fov = fov;
-        this.aspect = aspect;
-        this.near = near;
-        this.far = far;
+    constructor({ camera, renderer, speed = 10 } = {}) {
+        this.camera = camera;
+        this.renderer = renderer;
         this.speed = speed;
+
         this.move = {
             forward: false,
             backward: false,
@@ -16,6 +14,7 @@ class CameraController {
             up: false,
             down: false
         }
+        
         this.keyMap = {
             KeyW: 'forward',
             KeyS: 'backward',
@@ -25,12 +24,10 @@ class CameraController {
             KeyC: 'down'
         }
 
-        this.camera = new THREE.PerspectiveCamera(this.fov, this.aspect, this.near, this.far);
-
-        if (!renderer) {
-            throw new Error('CameraController requires a renderer');
+        if (!this.camera || !this.renderer) {
+            throw new Error('CameraController requires a camera and renderer');
         } else {
-            this.controls = new PointerLockControls(this.camera, renderer.domElement);
+            this.controls = new PointerLockControls(this.camera, this.renderer.domElement);
         }
     }
 
