@@ -37,13 +37,55 @@ class ThreeJS {
         }
     }
     
-    createCamera({ fov = 75, aspect = 1920/1080, near = 0.1, far = 1000, enableControls = false } = {}) {
-        this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        this.camera.position.z = 60;
-
+    createCamera({ fov = 75,  aspect = window.innerWidth / window.innerHeight, near = 0.1, far = 1000, position = new THREE.Vector3(0, 0, 60), enableControls = false } = {}) {
+        if(!this.camera) {
+            this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+        } else {
+            throw new Error('Camera already exists!');
+        }
+        
         if (enableControls) {
             this.cameraController = new CameraController({camera: this.camera, renderer: this.renderer});    
             this.cameraController.bindEvents();
+        }
+
+        this.updateCamera({ fov, aspect, near, far, position });
+    }
+
+    updateCamera({ fov, aspect, near, far, position } = {}) {
+        if(!this.camera) {
+            throw new Error('Camera does not exists!');
+        } else {
+            if (fov !== undefined) {
+                this.camera.fov = fov;
+            } else {
+                throw new Error('FOV is undefined');
+            }
+            
+            if (aspect !== undefined) {
+                this.camera.aspect = aspect;
+            } else {
+                throw new Error('Aspect is undefined');
+            }
+
+            if (near !== undefined) {
+                this.camera.near = near;
+            } else {
+                throw new Error('Near is undefined');
+            }
+
+            if (far !== undefined) {
+                this.camera.far = far;
+            } else {
+                throw new Error('Far is undefined');
+            }
+
+            if (position !== undefined) {
+                this.camera.position.copy(position);
+            } else {
+                throw new Error('Cameras position is undefined');
+            }
+            this.camera.updateProjectionMatrix();
         }
     }
 
