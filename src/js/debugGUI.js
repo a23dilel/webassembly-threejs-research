@@ -3,10 +3,12 @@ import { loadFromLocalStorage, removeLocalStorage, saveToLocalStorage } from './
 
 class DebugGUI {
     constructor({ container, onChange } = {}) {
-        this.gui = new GUI({container});
+        this.container = container;
         this.onChange = onChange;
+    }
 
-        this.object = {
+    createObject() {
+        return {
             performance: {
                 display: {
                     fps: 0,
@@ -41,41 +43,55 @@ class DebugGUI {
             presets: {
                 button: {
                     savePreset: () => {
-                        saveToLocalStorage( 'preset', this.gui.save() );
-                        this.loadButton.enable();
-                        this.deleteButton.enable();
+                        this.save();
                     },
                     loadPreset: () => {                    
-                        let preset = loadFromLocalStorage( 'preset' )
-
-                        if (preset != null) {
-                            this.loadButton.enable();
-                            this.deleteButton.enable();
-                            this.gui.load(preset);
-                        } else {
-                            this.loadButton.disable();
-                            this.deleteButton.disable();
-                        } 
+                        this.load();
                     },
                     deleteAllPresets: () => {
-                        if (confirm( 'Do you want to delete all presets?' )) {
-                            removeLocalStorage( 'preset' );
-                            this.loadButton.disable();
-                            this.deleteButton.disable();
-                        } 
+                        this.deleteAll();
                     }
                 }
             }
         }
     }
 
+    save() {
+        saveToLocalStorage( 'preset', this.gui.save() );
+        this.loadButton.enable();
+        this.deleteButton.enable();
+    }
+
+    load() {
+        let preset = loadFromLocalStorage( 'preset' )
+
+        if (preset != null) {
+            this.loadButton.enable();
+            this.deleteButton.enable();
+            this.gui.load(preset);
+        } else {
+            this.loadButton.disable();
+            this.deleteButton.disable();
+        } 
+    }
+    
+    deleteAll() {
+        if (confirm( 'Do you want to delete all presets?' )) {
+            removeLocalStorage( 'preset' );
+            this.loadButton.disable();
+            this.deleteButton.disable();
+        } 
+    }
+
     init() {
+        this.gui = new GUI({ container: this.container });
+        this.object = this.createObject();
+        
         const { object } = this;
-        let { gui } = this;
         let method, params;
 
         for (let propertyName in object) {            
-            const folder = gui.addFolder( propertyName );
+            const folder = this.gui.addFolder( propertyName );
 
             for (let type in object[propertyName]) {
                 for (let key in object[propertyName][type]) {
