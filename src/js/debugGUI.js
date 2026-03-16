@@ -1,10 +1,10 @@
 import GUI from 'lil-gui';
 import { loadFromLocalStorage, removeLocalStorage, saveToLocalStorage } from './localStorage';
-import { createGeometry } from './three';
 
 class DebugGUI {
-    constructor() {
-        this.gui = new GUI(document.body);
+    constructor({ container, onChange } = {}) {
+        this.gui = new GUI({container});
+        this.onChange = onChange;
 
         this.object = {
             performance: {
@@ -25,7 +25,10 @@ class DebugGUI {
             
             particlesGeometry: {
                 input: {
-                    type: 'points',
+                    type: {
+                        default: 'points',
+                        options: ['points','cubes']
+                    },
                     count: 100,
                     size: 0.5,
                     color: 0x00ff00,
@@ -78,14 +81,14 @@ class DebugGUI {
                 for (let key in object[propertyName][type]) {
                     const capitalize = key.charAt(0).toLocaleUpperCase() + key.substring(1);
 
-                    if (key == "color") {
+                    if (key.startsWith("color")) {
                         method = "addColor";
                     } else {
                         method = "add";
                     }
 
-                    if (key == "type") {
-                        params = [object[propertyName][type], key, ['points', 'cubes']];
+                    if (key.startsWith("type")) {
+                        params = [object[propertyName][type][key], 'default', object[propertyName][type][key].options];
                     } else {
                         params = [object[propertyName][type], key];
                     }
@@ -96,7 +99,9 @@ class DebugGUI {
                         control.listen();
                     } else if (type == "input") {
                         control.onChange(() => {
-                            createGeometry(object[propertyName][type]);
+                            if(this.onChange) {
+                                this.onChange(object[propertyName][type])
+                            }
                         });
                     }
                     
