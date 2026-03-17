@@ -40,16 +40,18 @@ class ThreeJS {
     createCamera({ fov = 75,  aspect = window.innerWidth / window.innerHeight, near = 0.1, far = 1000, position = new THREE.Vector3(0, 0, 60), enableControls = false } = {}) {
         if(!this.camera) {
             this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+            this.camera.position.copy(position);
+            this.camera.updateProjectionMatrix();
+
+            if (enableControls) {
+                this.cameraController = new CameraController({camera: this.camera, renderer: this.renderer});
+                this.cameraController.bindEvents();  
+            } else {
+                this.cameraController = null;
+            }
         } else {
             throw new Error('Camera already exists!');
         }
-        
-        if (enableControls) {
-            this.cameraController = new CameraController({camera: this.camera, renderer: this.renderer});    
-            this.cameraController.bindEvents();
-        }
-
-        this.updateCamera({ fov, aspect, near, far, position });
     }
 
     updateCamera({ fov, aspect, near, far, position } = {}) {
