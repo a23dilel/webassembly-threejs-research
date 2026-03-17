@@ -103,17 +103,38 @@ class ThreeJS {
     }
 
     createGeometry(geometry) {
-        if (this.geometry) {
-            this.scene.remove(this.geometry.mesh);
-            this.geometry.disposeGeometry?.();
+        if (!this.geometry) {
+            this.geometry = geometry;
+            this.scene.add(this.geometry.mesh);
+        } else {
+            throw new Error('Geometry already exists!');
         }
-
-        this.geometry = geometry;
-        this.scene.add(this.geometry.mesh);
     }
 
-    update() {
-        this.renderer.setAnimationLoop (this.animate);
+    destroyGeometry() {
+        if (this.geometry) {
+            this.scene.remove(this.geometry.mesh);
+            this.geometry.disposeGeometry();
+            this.geometry = null;
+        } else {
+            throw new Error('Geometry does not exists!');
+        }
+    }
+
+    start() {
+        this.setLoop(this.animate);
+    }
+
+    stop() {
+        this.setLoop(this.animate);
+    }
+
+    setLoop(callback) {
+        if (!this.renderer) {
+            throw new Error("Renderer not created");
+        } else {
+            this.renderer.setAnimationLoop(callback);
+        }
     }
 
     animate = () => {
