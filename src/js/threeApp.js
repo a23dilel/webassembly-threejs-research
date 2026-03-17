@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { CameraController } from './cameraController';
 
-class ThreeJS {
+class ThreeApp {
     constructor({ debugGUI, fpsCounter } = {} ) {
         this.scene = new THREE.Scene();
         this.clock = new THREE.Clock();
@@ -171,4 +171,4 @@ class ThreeJS {
     }
 }
 
-export { ThreeJS }
+export { ThreeApp }
