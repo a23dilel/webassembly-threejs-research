@@ -3,13 +3,14 @@ import * as THREE from 'three';
 class Particles {
     static COMPONENTS_PER_PARTICLE = 3;
 
-    constructor({ type = 'cubes', count = 100, size = 0.5, color = 0x00ff00, posBounds = 50, speed = 5 } = {} ) {
+    constructor({ type = 'cubes', count = 100, posBounds = 50, size = 0.5, color = 0x00ff00, speed = 5, wireframe = false } = {} ) {
         this.type = type;
         this.count = count;
+        this.posBounds = posBounds;
         this.size = size;
         this.color = color;
-        this.posBounds = posBounds;
         this.speed = speed;
+        this.wireframe = wireframe;
 
         this.particleLength = this.count * Particles.COMPONENTS_PER_PARTICLE;
         this.positionArray = new Float32Array(this.particleLength);
@@ -36,19 +37,19 @@ class Particles {
     }
 
     createGeometry() {
-        const {type, positionArray, size, color, count} = this;
+        const {type, positionArray, size, color, count, wireframe} = this;
 
         if (type == 'points') {
             const geometry = new THREE.BufferGeometry();
             this.posBufferAttr = new THREE.BufferAttribute(positionArray, 3);
             geometry.setAttribute('position', this.posBufferAttr);
     
-            const material = new THREE.PointsMaterial({ size: size, color: color, sizeAttenuation: true});
+            const material = new THREE.PointsMaterial({ size, color, sizeAttenuation: true});
             this.mesh = new THREE.Points(geometry, material);
 
         } else if (type == 'cubes') {
             const boxGeometry = new THREE.BoxGeometry(size, size, size);
-            const material = new THREE.MeshBasicMaterial({ color: color });
+            const material = new THREE.MeshBasicMaterial({ color, wireframe});
             
             this.mesh = new THREE.InstancedMesh(boxGeometry, material, count);
             this.object3D = new THREE.Object3D();

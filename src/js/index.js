@@ -12,8 +12,8 @@ if (WebGL.isWebGL2Available()) {
   let particles = new Particles();
 
   if(debugGUI) {
-    const { type, count, size, color, posBounds, speed } = debugGUI.object.particlesGeometry.input;
-    particles = new Particles({ type: type.default, count, size, color, posBounds, speed });
+    const { type, count, posBounds, size, color, speed, wireframe } = debugGUI.object.particlesGeometry.input;
+    particles = new Particles({ type: type.default, count, posBounds, size, color, speed, wireframe});
   } 
 
   const threeApp = new ThreeApp({debugGUI, fpsCounter});
@@ -30,8 +30,8 @@ if (WebGL.isWebGL2Available()) {
   debugGUI.start({onChange: update})
   
   function update(object) {
-    const { type, count, size, color, posBounds, speed } = object.particlesGeometry.input;
-    particles = new Particles({ type: type.default, count, size, color, posBounds, speed });
+    const { type, count, posBounds, size, color, speed, wireframe } = object.particlesGeometry.input;
+    particles = new Particles({ type: type.default, count, posBounds, size, color, speed, wireframe});
     threeApp.setGeometry(particles);
   }
 } else {
