@@ -20,7 +20,7 @@ if (WebGL.isWebGL2Available()) {
   threeApp.createRenderer({container, width: window.innerWidth, height: window.innerHeight});
   threeApp.createCamera({aspect: window.innerWidth / window.innerHeight, enableControls: true});
   threeApp.setGeometry(particles);
-  threeApp.start();
+  threeApp.setRunning(true);
   
   window.addEventListener("resize", (event) => {
     threeApp.updateRenderer({width: window.innerWidth, height: window.innerHeight});

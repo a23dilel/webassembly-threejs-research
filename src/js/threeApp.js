@@ -117,12 +117,12 @@ class ThreeApp {
         this.scene.add(this.geometry.mesh);
     }
 
-    start() {
-        this.setLoop(this.animate);
-    }
-
-    stop() {
-        this.setLoop(this.animate);
+    setRunning(isRunning) {
+        if(isRunning) {
+            this.setLoop(this.animate);
+        } else {
+            this.setLoop(null);
+        }
     }
 
     setLoop(callback) {
