@@ -2,13 +2,9 @@ import GUI from 'lil-gui';
 import { loadFromLocalStorage, removeLocalStorage, saveToLocalStorage } from './localStorage';
 
 class DebugGUI {
-    constructor({ container, onChange } = {}) {
-        this.container = container;
-        this.onChange = onChange;
-    }
-
-    createObject() {
-        return {
+    constructor({ container } = {}) {
+        this.gui = new GUI({ container });
+        this.object = {
             performance: {
                 display: {
                     fps: 0,
@@ -83,10 +79,7 @@ class DebugGUI {
         } 
     }
 
-    init() {
-        this.gui = new GUI({ container: this.container });
-        this.object = this.createObject();
-        
+    start({ onChange } = {}) {
         const { object } = this;
         let method, params;
 
@@ -115,8 +108,8 @@ class DebugGUI {
                         control.listen();
                     } else if (type == "input") {
                         control.onChange(() => {
-                            if(this.onChange) {
-                                this.onChange(object[propertyName][type])
+                            if(onChange) {
+                                onChange(object)
                             }
                         });
                     }
