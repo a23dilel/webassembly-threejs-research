@@ -1,11 +1,41 @@
 import WebGL from 'three/addons/capabilities/WebGL.js';
-import { initThreeJS } from './three';
-import { initGUI } from './gui';
+import { ThreeApp } from './threeApp';
+import { DebugGUI } from './debugGUI';
+import { FPSCounter } from './fpsCounter';
+import { Particles } from './particles';
 
-if ( WebGL.isWebGL2Available() ) {
-  initGUI();
-  initThreeJS();
+const container = document.body;
+
+if (WebGL.isWebGL2Available()) {  
+  const debugGUI = new DebugGUI({container: container.canvas});
+  const fpsCounter = new FPSCounter();
+  let particles = new Particles();
+
+  if(debugGUI) {
+    const { type, count, size, color, posBounds, speed } = debugGUI.object.particlesGeometry.input;
+    particles = new Particles({ type: type.default, count, size, color, posBounds, speed });
+  } 
+
+  const threeApp = new ThreeApp({debugGUI, fpsCounter});
+  threeApp.createRenderer({container, width: window.innerWidth, height: window.innerHeight});
+  threeApp.createCamera({aspect: window.innerWidth / window.innerHeight, enableControls: true});
+  threeApp.createGeometry(particles);
+  threeApp.start();
+  
+  window.addEventListener("resize", (event) => {
+    threeApp.updateRenderer({width: window.innerWidth, height: window.innerHeight})
+    threeApp.updateCamera({aspect: window.innerWidth / window.innerHeight})
+  })
+
+  debugGUI.start({onChange: update})
+  
+  function update(object) {
+    const { type, count, size, color, posBounds, speed } = object.particlesGeometry.input;
+    particles = new Particles({ type: type.default, count, size, color, posBounds, speed });
+    threeApp.destroyGeometry()
+    threeApp.createGeometry(particles);
+  }
 } else {
-  const WARNING = WebGL.getWebGL2ErrorMessage();
-  document.body.appendChild( WARNING );
+  const warning = WebGL.getWebGL2ErrorMessage();
+  container.appendChild(warning);
 }
