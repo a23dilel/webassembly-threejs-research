@@ -35,7 +35,7 @@ class CameraController {
         const { controls, move, keyMap } = this;
         
         // Click to lock pointer and start moving
-        document.addEventListener('click', () => {
+        this.renderer.domElement.addEventListener('click', () => {
             if (controls.isLocked) {
                 controls.unlock();
             } else {
