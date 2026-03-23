@@ -41,6 +41,14 @@ class DebugGUI {
 
             threeApp: {
                 input: {
+                    backgroundcolor: 0x000000,
+                    fov: 75, 
+                    near: 0.1, 
+                    far: 1000, 
+                    cameraX: 0, 
+                    cameraY: 0, 
+                    cameraZ: 60, 
+                    enableControls: true,
                     running: true
                 }
             },
@@ -100,13 +108,13 @@ class DebugGUI {
                 for (let key in object[propertyName][type]) {
                     const capitalize = key.charAt(0).toLocaleUpperCase() + key.substring(1);
 
-                    if (key.startsWith("color")) {
+                    if (key.startsWith("color") || key.endsWith("color")) {
                         method = "addColor";
                     } else {
                         method = "add";
                     }
 
-                    if (key.startsWith("type")) {
+                    if (key.startsWith("type") || key.endsWith("type")) {
                         params = [object[propertyName][type][key], 'default', object[propertyName][type][key].options];
                     } else {
                         params = [object[propertyName][type], key];
