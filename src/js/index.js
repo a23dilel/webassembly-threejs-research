@@ -12,10 +12,10 @@ if (WebGL.isWebGL2Available()) {
   const { running: isRunning } = debugGUI.object.threeApp.input;
   
   let particles = new Particles({ type: type.default, count, spread, speed, size, color, wireframe, isBounceable });
-  
   const fpsCounter = new FPSCounter();
   const threeApp = new ThreeApp({debugGUI, fpsCounter});
 
+  threeApp.createScene();
   threeApp.createRenderer({container, width: window.innerWidth, height: window.innerHeight});
   threeApp.createCamera({aspect: window.innerWidth / window.innerHeight, enableControls: true});
   threeApp.addScene(particles);
@@ -28,12 +28,16 @@ if (WebGL.isWebGL2Available()) {
 
   function update(object) {
     const { type, count, spread, speed, size, color, wireframe, bounceable: isBounceable } = object.particles.input;
-    const { running: isRunning } = object.threeApp.input;
+    const { backgroundcolor, fov, near, far, cameraX, cameraY, cameraZ, enableControls, running: isRunning } = object.threeApp.input;
 
+    // Update particles
     threeApp.removeScene();
     particles.updateSetup({ type: type.default, count, spread, speed, size, color, wireframe, isBounceable });
     threeApp.addScene(particles);
-    
+
+    // Update ThreeApp
+    threeApp.updateScene({backgroundcolor});
+    threeApp.updateCamera({fov, near, far, cameraX, cameraY, cameraZ, enableControls})
     threeApp.setRunning(isRunning);
   }
 
