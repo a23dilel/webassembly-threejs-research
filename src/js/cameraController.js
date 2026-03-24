@@ -32,7 +32,7 @@ class CameraController {
     }
 
     setSpeed(speed) {
-        if(speed) {
+        if(speed !== undefined) {
             this.speed = speed;
         }
     }

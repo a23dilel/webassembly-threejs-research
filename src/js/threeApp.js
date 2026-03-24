@@ -103,11 +103,7 @@ class ThreeApp {
                         if (!this.cameraController) {
                             this.cameraController = new CameraController({camera: this.camera, renderer: this.renderer});
                         }
-
-                        if(speed !== undefined) { 
-                            this.cameraController.setSpeed(speed);
-                        }
-
+                        this.cameraController.setSpeed(speed);
                         this.cameraController.bindEvents(); 
                     } else {
                         this.cameraController = null;
