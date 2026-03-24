@@ -25,7 +25,7 @@ class ThreeApp {
         }
     }
 
-    createRenderer({ container, width = window.innerWidth, height = window.innerHeight } = {}) {
+    createRenderer({ container, width = window.innerWidth, height = window.innerHeight, antialias = true } = {}) {
         if (!container) {
             throw new Error('Container DOM element is required.');
         } else {
@@ -33,14 +33,14 @@ class ThreeApp {
                 this.renderer = new THREE.WebGLRenderer();
                 container.appendChild(this.renderer.domElement);
 
-                this.updateRenderer({ width, height });
+                this.updateRenderer({ width, height, antialias});
             } else {
                 throw new Error('Renderer already exists!');
             }
         }
     }
     
-    updateRenderer({ width, height } = {}) {
+    updateRenderer({ width, height, antialias} = {}) {
         if(!this.renderer) {
             throw new Error('Renderer does not exists!');
         } else {
@@ -48,6 +48,12 @@ class ThreeApp {
                 this.renderer.setSize(width, height, true);
             } else {
                 throw new Error(`Invalid width or height: width=${width}, height=${height}. Must be finite numbers.`);
+            }
+
+            if (typeof antialias === "boolean") {
+                this.renderer.antialias = antialias;
+            } else {
+                throw new Error('antialias must be a boolean');
             }
         }
     }
@@ -70,7 +76,7 @@ class ThreeApp {
         }
     }
 
-    updateCamera({ fov, aspect, near, far, cameraX = 0, cameraY = 0, cameraZ = 60, enableControls } = {}) {
+    updateCamera({ fov, aspect, near, far, cameraX, cameraY, cameraZ, enableControls } = {}) {
         if(!this.camera) {
             throw new Error('Camera does not exists!');
         } else {

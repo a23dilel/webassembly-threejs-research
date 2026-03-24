@@ -50,6 +50,7 @@ class DebugGUI {
                     cameraY: 0, 
                     cameraZ: 60, 
                     enableControls: true,
+                    antialias: true,
                     running: true
                 }
             },
