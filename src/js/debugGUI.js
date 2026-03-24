@@ -32,6 +32,7 @@ class DebugGUI {
                     count: 100,
                     spread: 50,
                     speed: 5,
+                    pushApart: 0.1,
                     size: 0.5,
                     color: 0x00ff00,
                     wireframe: false,

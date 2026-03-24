@@ -7,11 +7,12 @@ class Particles {
         this.#createSetup({type, count, spread, speed, size, color, wireframe, isBounceable});
     }
 
-    #createSetup({type, count, spread, speed, size, color, wireframe, isBounceable}) {
+    #createSetup({type, count, spread, speed, pushApart, size, color, wireframe, isBounceable}) {
         this.type = type;
         this.count = count;   
         this.speed = speed;
         this.isBounceable = isBounceable;
+        this.pushApart = pushApart;
         
         const geometry = this.#createGeometry({type, size, count, spread});
         const material = this.#createMaterial({type, size, color, wireframe});
@@ -91,12 +92,12 @@ class Particles {
         }
     }
 
-    updateSetup({type, count, spread, speed, size, color, wireframe, isBounceable} = {}) {
+    updateSetup({type, count, spread, speed, pushApart, size, color, wireframe, isBounceable} = {}) {
         if(this.mesh) {
             this.#disposeMesh();
         }
 
-        this.#createSetup({type, count, spread, speed, size, color, wireframe, isBounceable})
+        this.#createSetup({type, count, spread, speed, pushApart, size, color, wireframe, isBounceable})
     }
 
     #disposeMesh() {
@@ -109,7 +110,7 @@ class Particles {
     }
 
     update(deltaTime) {
-        const {type, count, speed, boxBounds, positionArray, velocityArray, mesh, hitBoxes, isBounceable} = this;
+        const {type, count, speed, boxBounds, positionArray, velocityArray, mesh, hitBoxes, isBounceable, pushApart} = this;
         
         // Loop through each particle
         for (let i = 0; i < count; i++) {
@@ -195,16 +196,6 @@ class Particles {
                         const secondCubeVelZ = velocityArray[secondHitBoxZ] *= reverseDirection;
 
                         // Prevent two cube particles from sticking together (overlapping)
-                        const firstCubeSpeed = Math.abs(firstCubeVelX) + Math.abs(firstCubeVelY) + Math.abs(firstCubeVelZ);
-                        const secondCubeSpeed = Math.abs(secondCubeVelX) + Math.abs(secondCubeVelY) + Math.abs(secondCubeVelZ);
-
-                        // Limit push so it never goes above 0.5. If cubes move faster
-                        const cappedPush = Math.min(0.5, (firstCubeSpeed + secondCubeSpeed) * 0.1);
-
-                        // Make sure push is never smaller than 0.05. If cubes move slowly
-                        const clampedPush = Math.max(0.05, cappedPush);
-                        const pushApart = clampedPush;
-
                         // Move the first cube particle along its new velocity (x, y, z)
                         positionArray[firstHitBoxX] += firstCubeVelX * pushApart;
                         positionArray[firstHitBoxY] += firstCubeVelY * pushApart;
