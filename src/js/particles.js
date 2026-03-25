@@ -16,7 +16,7 @@ class Particles {
         
         const geometry = this.#createGeometry({type, size, count, spread});
         const material = this.#createMaterial({type, size, color, wireframe});
-        this.mesh = this.#createMesh({type, count, geometry, material, isBounceable} );
+        this.mesh = this.#createMesh({type, size, count, geometry, material, isBounceable} );
     }
 
     #createGeometry({type, size, count, spread} = {}) {
@@ -55,7 +55,7 @@ class Particles {
         } 
     }
 
-    #createMesh({type, count, geometry, material, isBounceable} = {}) {
+    #createMesh({type, size, count, geometry, material, isBounceable} = {}) {
         if (type == 'points') {
             return new THREE.Points(geometry, material);
         } else if (type == 'cubes') {
@@ -71,11 +71,6 @@ class Particles {
                 const z = this.positionArray[particleIndex + 2];
                 const position = new THREE.Vector3(x, y, z);
 
-                const width = instancedMesh.geometry.parameters.width;
-                const height = instancedMesh.geometry.parameters.height;
-                const depth = instancedMesh.geometry.parameters.depth;
-                const size = new THREE.Vector3(width, height, depth);
-
                 const matrix4 = new THREE.Matrix4();
                 matrix4.makeTranslation(position);
                 instancedMesh.setMatrixAt(i, matrix4);
@@ -83,7 +78,7 @@ class Particles {
                 // Set each hitBox's xyz
                 if(isBounceable) {
                     const box = new THREE.Box3();
-                    box.setFromCenterAndSize(position, size)
+                    box.setFromCenterAndSize(position, size);
                     this.hitBoxes.push(box);
                 }
             }
