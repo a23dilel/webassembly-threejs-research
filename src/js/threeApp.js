@@ -70,8 +70,9 @@ class ThreeApp {
 
             if (enableControls) {
                 this.cameraController = new CameraController({camera: this.camera, renderer: this.renderer, speed});
-                this.cameraController.bindEvents();  
+                this.cameraController.bindEvents(true);  
             } else {
+                this.cameraController.bindEvents(false);  
                 this.cameraController = null;
             }
         } else {
@@ -104,8 +105,9 @@ class ThreeApp {
                             this.cameraController = new CameraController({camera: this.camera, renderer: this.renderer});
                         }
                         this.cameraController.setSpeed(speed);
-                        this.cameraController.bindEvents(); 
+                        this.cameraController.bindEvents(true); 
                     } else {
+                        this.cameraController.bindEvents(false); 
                         this.cameraController = null;
                     }
                 } else {
