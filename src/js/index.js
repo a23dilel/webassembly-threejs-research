@@ -42,7 +42,7 @@ if (WebGL.isWebGL2Available()) {
     threeApp.setRunning(isRunning);
   }
 
-  debugGUI.start({onChange: update});
+  debugGUI.start({onChange: update, delayOnChange: 5});
 } else {
   const warning = WebGL.getWebGL2ErrorMessage();
   container.appendChild(warning);

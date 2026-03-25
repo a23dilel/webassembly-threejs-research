@@ -129,9 +129,7 @@ class DebugGUI {
                         control.listen();
                     } else if (type == "input") {
                         control.onChange(() => {
-                            if(onChange) {
-                                onChange(object)
-                            }
+                            this.#delayOnChange({onChange, object, delay: delayOnChange});
                         });
                     }
                     
@@ -145,6 +143,18 @@ class DebugGUI {
         }
         // If there are preset values, then load them into the GUI; otherwise, do not load any values
         object.presets.button.loadPreset();
+    }
+
+    #delayOnChange({onChange, object, delay = 200}) {
+        // Cancel the previously scheduled method if it hasn't executed yet
+        clearTimeout(this.timeout);
+        
+        this.timeout = setTimeout(() => {
+            if(onChange) {
+                onChange(object)
+            }
+
+        }, delay)
     }
 }
 
