@@ -37,33 +37,44 @@ class CameraController {
         }
     }
 
-    bindEvents() {
-        const { controls, move, keyMap } = this;
-        
-        // Click to lock pointer and start moving
-        this.renderer.domElement.addEventListener('click', () => {
-            if (controls.isLocked) {
-                controls.unlock();
-            } else {
-                controls.lock();
-            }
-        });
-        
-        document.addEventListener('keydown', (event) => {
-            let direction = keyMap[event.code];
-            
-            if (direction) {
-                move[direction] = true;
-            }
-        });
+    bindEvents(isMovable) {
+        if(isMovable) {
+            this.renderer.domElement.addEventListener('click', this.#onClick);
+            document.addEventListener('keydown', this.#onKeydown);
+            document.addEventListener('keyup', this.#onKeyup);
+        } else {
+            this.renderer.domElement.removeEventListener('click', this.#onClick);
+            document.removeEventListener('keydown', this.#onKeydown);
+            document.removeEventListener('keyup', this.#onKeyup);
+        }
+    }
 
-        document.addEventListener('keyup', (event) => {
-            let direction = keyMap[event.code];
+    // Click to lock pointer and start moving around
+    #onClick = () => {
+        const { controls } = this;
+        if (controls.isLocked) {
+            controls.unlock();
+        } else {
+            controls.lock();
+        }
+    }
 
-            if (direction) {
-                move[direction] = false;
-            }
-        });
+    #onKeydown = (event) => {
+        const { move, keyMap } = this;
+        let direction = keyMap[event.code];
+        
+        if (direction) {
+            move[direction] = true;
+        }
+    }
+
+    #onKeyup = (event) =>  {
+        const { move, keyMap } = this;
+        let direction = keyMap[event.code];
+
+        if (direction) {
+            move[direction] = false;
+        }
     }
 
     update(deltaTime) {
