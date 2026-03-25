@@ -59,26 +59,26 @@ class DebugGUI {
             presets: {
                 button: {
                     savePreset: () => {
-                        this.save();
+                        this.#save();
                     },
                     loadPreset: () => {                    
-                        this.load();
+                        this.#load();
                     },
                     deleteAllPresets: () => {
-                        this.deleteAll();
+                        this.#deleteAll();
                     }
                 }
             }
         }
     }
 
-    save() {
+    #save() {
         saveToLocalStorage( 'preset', this.gui.save() );
         this.loadButton.enable();
         this.deleteButton.enable();
     }
 
-    load() {
+    #load() {
         let preset = loadFromLocalStorage( 'preset' )
 
         if (preset != null) {
@@ -91,7 +91,7 @@ class DebugGUI {
         } 
     }
     
-    deleteAll() {
+    #deleteAll() {
         if (confirm( 'Do you want to delete all presets?' )) {
             removeLocalStorage( 'preset' );
             this.loadButton.disable();
@@ -99,7 +99,7 @@ class DebugGUI {
         } 
     }
 
-    start({ onChange } = {}) {
+    start({ onChange, delayOnChange} = {}) {
         const { object } = this;
         let method, params;
 
