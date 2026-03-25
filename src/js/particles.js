@@ -78,7 +78,7 @@ class Particles {
                 // Set each hitBox's xyz
                 if(isBounceable) {
                     const box = new THREE.Box3();
-                    box.setFromCenterAndSize(position, size);
+                    box.setFromCenterAndSize(position, new THREE.Vector3(size, size, size));
                     this.hitBoxes.push(box);
                 }
             }
