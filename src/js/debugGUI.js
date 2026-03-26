@@ -35,8 +35,8 @@ class DebugGUI {
                     pushApart: 0.1,
                     size: 0.5,
                     pointcolor: 0x00ff00,
-                    boxWireframe: false,
-                    boxBounceable: true
+                    cubeWireframe: false,
+                    cubeBounceable: true
                 }
             },
 
