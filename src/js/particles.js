@@ -51,7 +51,7 @@ class Particles {
         if (type == 'points') {
             return new THREE.PointsMaterial({ size, color, sizeAttenuation: true });
         } else if (type == 'cubes') {                
-            return new THREE.MeshBasicMaterial({color, wireframe});
+            return new THREE.MeshNormalMaterial({wireframe});
         } 
     }
 
