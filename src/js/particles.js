@@ -11,8 +11,9 @@ class Particles {
         this.type = type;
         this.count = count;   
         this.speed = speed;
-        this.isBounceable = isBounceable;
         this.pushApart = pushApart;
+        this.size = size;
+        this.isBounceable = isBounceable;
         
         const geometry = this.#createGeometry({type, size, count, spread});
         const material = this.#createMaterial({type, size, color, wireframe});
@@ -139,7 +140,7 @@ class Particles {
     }
 
     update(deltaTime) {
-        const {type, count, speed, boxBounds, positionArray, velocityArray, mesh, hitBoxes, isBounceable, pushApart} = this;
+        const {type, count, speed, pushApart, size, boxBounds, positionArray, velocityArray, mesh, hitBoxes, isBounceable} = this;
         
         // Loop through each particle
         for (let i = 0; i < count; i++) {
@@ -159,21 +160,16 @@ class Particles {
             if (type == 'cubes') {
                 const position = new THREE.Vector3(x, y, z);
 
-                const width = mesh.geometry.parameters.width;
-                const height = mesh.geometry.parameters.height;
-                const depth = mesh.geometry.parameters.depth;
-                const size = new THREE.Vector3(width, height, depth);
+                // Update hitBox's xyz
+                if(isBounceable) {
+                    const box = hitBoxes[i];
+                    box.setFromCenterAndSize(position, new THREE.Vector3(size, size, size));
+                    hitBoxes[i] = box;
+                }
 
                 const matrix4 = new THREE.Matrix4();
                 matrix4.makeTranslation(position);
                 mesh.setMatrixAt(i, matrix4);
-                
-                // Update hitBox's xyz
-                if(isBounceable) {
-                    const box = hitBoxes[i];
-                    box.setFromCenterAndSize(position, size);
-                    hitBoxes[i] = box;
-                }
             }
 
             // Loop through x, y, z from particle
