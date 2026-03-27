@@ -69,7 +69,7 @@ class Particles {
                 const z = this.positionArray[particleIndex + 2];
                 const position = new THREE.Vector3(x, y, z);
 
-                // Set each hitBox's xyz
+                // Set hitBox center and size
                 if(isBounceable) {
                     const box = new THREE.Box3();
                     box.setFromCenterAndSize(position, new THREE.Vector3(size, size, size));
@@ -82,6 +82,37 @@ class Particles {
                 instancedMesh.setMatrixAt(i, matrix4);
             }
 
+            let attempts = 0;
+            const maxAttempts = 1000;
+            // Check if any cube particles are inside another cube. If so, then move them to a different position
+            if(isBounceable) {
+                for(let firstHitBox = 0; firstHitBox < this.hitBoxes.length; firstHitBox++) {
+                    const nextHitBox = 1;
+                    for(let secondHitBox = firstHitBox + nextHitBox; secondHitBox < this.hitBoxes.length; secondHitBox++) {
+                        // If a cube particle collides with another, move the second cube to a random position until it no longer overlaps
+                        while (this.hitBoxes[firstHitBox].intersectsBox(this.hitBoxes[secondHitBox]) && attempts < maxAttempts) {
+                            const secondHitBoxIndex = secondHitBox * Particles.#COMPONENTS_PER_VERTEX;
+                            
+                            const secondCubePosX = this.positionArray[secondHitBoxIndex + 0] = this.#randomRange(-this.boxBounds, this.boxBounds);
+                            const secondCubePosY = this.positionArray[secondHitBoxIndex + 1] = this.#randomRange(-this.boxBounds, this.boxBounds);
+                            const secondCubePosZ = this.positionArray[secondHitBoxIndex + 2] = this.#randomRange(-this.boxBounds, this.boxBounds);
+                            const secondCubePos = new THREE.Vector3(secondCubePosX, secondCubePosY, secondCubePosZ);
+                            
+                            // Update hitbox center and size after collision
+                            const box = this.hitBoxes[secondHitBox];
+                            box.setFromCenterAndSize(secondCubePos, new THREE.Vector3(size, size, size));
+                            this.hitBoxes[secondHitBox] = box;
+                            
+                            // Update cube particle's xyz after collision
+                            const cubeMatrix4 = new THREE.Matrix4();
+                            cubeMatrix4.makeTranslation(secondCubePos);
+                            instancedMesh.setMatrixAt(secondHitBox, cubeMatrix4);
+                            
+                            attempts++
+                        }
+                    }
+                }
+            }
             return instancedMesh;
         }
     }
