@@ -63,7 +63,7 @@ class Particles {
 
             // Set each cube particle's xyz
             for(let particle = 0; particle < count; particle++) {
-                this.#updateCube(particle, size, this.positionArray, instancedMesh, isBounceable);
+                this.#updateCubeParticle(particle, size, this.positionArray, instancedMesh, isBounceable);
             }
 
             let attempts = 0;
@@ -132,7 +132,53 @@ class Particles {
         return this.mesh;
     }
 
-    #updateCube(particle, size, positionArray, mesh, isBounceable) {
+    update(deltaTime) {
+        const {type, count, speed, pushApart, size, boxBounds, positionArray, velocityArray, mesh, hitBoxes, isBounceable} = this;
+        
+        this.#updateParticlePhysics(count, Particles.#COMPONENTS, positionArray, velocityArray, speed, boxBounds, deltaTime);
+        
+        if (type == 'cubes') {
+            for (let particle = 0; particle < count; particle++) { 
+                this.#updateCubeParticle(particle, size, positionArray, mesh, isBounceable);
+            }
+
+            if (isBounceable) {
+                this.#updateCubeParticleHitBoxes(hitBoxes, Particles.#COMPONENTS, positionArray, velocityArray, pushApart);
+            }
+
+            mesh.instanceMatrix.needsUpdate = true;
+        } else if (type == 'points') {
+            mesh.geometry.attributes.position.needsUpdate = true;
+        }
+    }
+
+     #updateParticlePhysics(count, maxComponents, positionArray, velocityArray, speed, boxBounds, deltaTime) {
+        // Loop through each particle
+        for (let particle = 0; particle < count; particle++) {
+            const particleIndex = particle * maxComponents;
+
+            // Loop through x, y, z from particle
+            for (let component = 0; component < maxComponents; component++) {
+                // Get each x, y and z
+                const componentIndex = particleIndex + component;
+
+                // Update each x, y and z
+                const position = positionArray[componentIndex] += (velocityArray[componentIndex] * speed) * deltaTime;
+
+                // If particle's x, y or z hits box border, then reverse direction
+                if (position <= -boxBounds || position >= boxBounds) {
+                    const upperClamped = Math.min(boxBounds, position);
+                    const lowerClamped = Math.max(-boxBounds, upperClamped);
+                    
+                    const reverseDirection = -1;
+                    positionArray[componentIndex] = lowerClamped;
+                    velocityArray[componentIndex] *= reverseDirection;
+                }
+            }
+        }
+    }
+
+    #updateCubeParticle(particle, size, positionArray, mesh, isBounceable) {
         const particleIndex = particle * Particles.#COMPONENTS;
         
         // Get cube particle's xyz
@@ -154,72 +200,34 @@ class Particles {
         mesh.setMatrixAt(particle, matrix4);
     }
 
-    update(deltaTime) {
-        const {type, count, speed, pushApart, size, boxBounds, positionArray, velocityArray, mesh, hitBoxes, isBounceable} = this;
-        
-        // Loop through each particle
-        for (let particle = 0; particle < count; particle++) {
-            const particleIndex = particle * Particles.#COMPONENTS;
+    #updateCubeParticleHitBoxes(hitBoxes, maxComponents, positionArray, velocityArray, pushApart) {
+        for(let firstHitBox = 0; firstHitBox < hitBoxes.length; firstHitBox++) {
+            const nextHitBox = 1;
+            for(let secondHitBox = firstHitBox + nextHitBox; secondHitBox < hitBoxes.length; secondHitBox++) {
+                
+                // If cube particle hits another particle cube, then reverse direction
+                if(this.#intersectsBox(hitBoxes[firstHitBox], hitBoxes[secondHitBox])) {
+                    const firstCubeHitBoxIndex = firstHitBox * maxComponents;
+                    const secondCubeHitBoxIndex = secondHitBox * maxComponents;
+                    const cubeHitBoxes = [firstCubeHitBoxIndex, secondCubeHitBoxIndex];
 
-            // Loop through x, y, z from particle
-            for (let component = 0; component < Particles.#COMPONENTS; component++) {
-                // Get each x, y and z
-                const componentIndex = particleIndex + component;
+                    for(let cubeHitBox = 0; cubeHitBox < cubeHitBoxes.length; cubeHitBox++) {
+                        for (let component = 0; component < maxComponents; component++) {
+                            // Get hitBox's x, y and z 
+                            const componentIndex = cubeHitBoxes[cubeHitBox] + component;
+                            
+                            // Make cube particles bounce away from each other
+                            // Reverse the cube particle's x, y, z velocity
+                            const reverseDirection = -1;
+                            const cubeVel = velocityArray[componentIndex] *= reverseDirection;
 
-                // Update each x, y and z
-                const position = positionArray[componentIndex] += (velocityArray[componentIndex] * speed) * deltaTime;
-
-                // If particle's x, y or z hits box border, then reverse direction
-                if (position <= -boxBounds || position >= boxBounds) {
-                    const upperClamped = Math.min(boxBounds, position);
-                    const lowerClamped = Math.max(-boxBounds, upperClamped);
-                    
-                    const reverseDirection = -1;
-                    positionArray[componentIndex] = lowerClamped;
-                    velocityArray[componentIndex] *= reverseDirection;
-                }
-            }
-        }
-        
-        if (type == 'cubes') {
-            for (let particle = 0; particle < count; particle++) { 
-                this.#updateCube(particle, size, positionArray, mesh, isBounceable);
-            }
-
-            if (isBounceable) {
-                for(let firstHitBox = 0; firstHitBox < hitBoxes.length; firstHitBox++) {
-                    const nextHitBox = 1;
-                    for(let secondHitBox = firstHitBox + nextHitBox; secondHitBox < hitBoxes.length; secondHitBox++) {
-                        
-                        // If cube particle hits another particle cube, then reverse direction
-                        if(this.#intersectsBox(hitBoxes[firstHitBox], hitBoxes[secondHitBox])) {
-                            const firstCubeHitBoxIndex = firstHitBox * Particles.#COMPONENTS;
-                            const secondCubeHitBoxIndex = secondHitBox * Particles.#COMPONENTS;
-                            const cubeHitBoxes = [firstCubeHitBoxIndex, secondCubeHitBoxIndex];
-
-                            for(let cubeHitBox = 0; cubeHitBox < cubeHitBoxes.length; cubeHitBox++) {
-                                for (let component = 0; component < Particles.#COMPONENTS; component++) {
-                                    // Get hitBox's x, y and z 
-                                    const componentIndex = cubeHitBoxes[cubeHitBox] + component;
-                                    
-                                    // Make cube particles bounce away from each other
-                                    // Reverse the cube particle's x, y, z velocity
-                                    const reverseDirection = -1;
-                                    const cubeVel = velocityArray[componentIndex] *= reverseDirection;
-    
-                                    // Prevent two cube particles from sticking together (overlapping)
-                                    // Move the cube particle along its new velocity (x, y, z)
-                                    positionArray[componentIndex] += cubeVel * pushApart;
-                                }
-                            }
+                            // Prevent two cube particles from sticking together (overlapping)
+                            // Move the cube particle along its new velocity (x, y, z)
+                            positionArray[componentIndex] += cubeVel * pushApart;
                         }
                     }
                 }
             }
-
-            mesh.instanceMatrix.needsUpdate = true;
-        } else if (type == 'points') {
-            mesh.geometry.attributes.position.needsUpdate = true;
         }
     }
 }
