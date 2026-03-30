@@ -60,7 +60,18 @@ emsdk/emsdk_env.bat
 em++ -v
 ```
 
-5. Done! Now you can use the Emscripten toolchain to compile C++ to WebAssembly.
+5. Now, compile the C++ code (**lip.cpp**) to WebAssembly, which will generate **lib.js** and **lib.wasm**.
+- **Linux/MacOS:**
+```sh
+./scripts/compile_cpp_to_wasm.sh 
+```
+
+- **Windows:**
+```sh
+scripts/compile_cpp_to_wasm.bat 
+```
+
+6. Done! JavaScript will now import the **lib.js** file from the build directory.
 
 ### Three.js
 
