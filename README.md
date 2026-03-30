@@ -17,6 +17,53 @@ git clone https://github.com/a23dilel/webassembly-threejs-research.git
 
 ## Installation and Setup
 
+### Emscripten
+
+1. To run and build this project using Emscripten, you need to install the following:  
+- **Node.js** (18.3.0 or above) 
+- **Python** (3.8 or above) 
+- **Git** (for cloning and managing repositories)
+
+*Note: To learn more about Emscripten requirements, you can see the official documentation:   [Emscripten Toolchain Requirements](https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html#toolchain-what-you-need) and [Test which tools are installed](https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html#toolchain-test-which-dependencies-are-installed)*
+
+1. Navigate to the root directory of the project, which called the webassembly-threejs-research folder.
+```sh
+cd webassembly-threejs-research/
+```
+
+2. Install the Emscripten SDK (emsdk) and activate it for the current user.
+- **Linux/MacOS:**
+```sh
+./scripts/setup_emsdk.sh 
+```
+
+- **Windows:**
+```sh
+scripts/setup_emsdk.bat 
+```
+
+3. Next is activate the PATH and other environment variables in the current terminal.
+- **Linux/MacOS:**
+```sh
+source ./emsdk/emsdk_env.sh 
+```
+
+- **Windows:**
+```sh
+emsdk/emsdk_env.bat
+```
+
+*Note: You need to activate the PATH on Linux/macOS or Windows every time you open a new terminal to use Emscripten commands. Otherwise, the commands will not work.*
+
+4. Now check that the Emscripten command is working.
+```sh
+em++ -v
+```
+
+5. Done! Now you can use the Emscripten toolchain to compile C++ to WebAssembly.
+
+### Three.js
+
 1. Navigate to the root directory of the project, which called the webassembly-threejs-research folder.
 ```sh
 cd webassembly-threejs-research/
