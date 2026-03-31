@@ -26,12 +26,12 @@ git clone https://github.com/a23dilel/webassembly-threejs-research.git
 
 *Note: To learn more about Emscripten requirements, you can see the official documentation:   [Emscripten Toolchain Requirements](https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html#toolchain-what-you-need) and [Test which tools are installed](https://emscripten.org/docs/building_from_source/toolchain_what_is_needed.html#toolchain-test-which-dependencies-are-installed)*
 
-1. Navigate to the root directory of the project, which called the webassembly-threejs-research folder.
+1. Navigate to the root directory of the project, which called the **webassembly-threejs-research** folder.
 ```sh
 cd webassembly-threejs-research/
 ```
 
-2. Install the Emscripten SDK (emsdk) and activate it for the current user.
+2. Install the Emscripten SDK (emsdk) version 5.0.4 and activate it for the current user.
 - **Linux/MacOS:**
 ```sh
 ./scripts/setup_emsdk.sh 
@@ -41,6 +41,7 @@ cd webassembly-threejs-research/
 ```sh
 scripts/setup_emsdk.bat 
 ```
+*Note: The shell and batch files are set to install Emscripten SDK version 5.0.4.*
 
 3. Next is activate the PATH and other environment variables in the current terminal.
 - **Linux/MacOS:**
@@ -52,7 +53,6 @@ source ./emsdk/emsdk_env.sh
 ```sh
 emsdk/emsdk_env.bat
 ```
-
 *Note: You need to activate the PATH on Linux/macOS or Windows every time you open a new terminal to use Emscripten commands. Otherwise, the commands will not work.*
 
 4. Now check that the Emscripten command is working.
@@ -60,7 +60,7 @@ emsdk/emsdk_env.bat
 em++ -v
 ```
 
-5. Now, compile the C++ code (**lip.cpp**) to WebAssembly, which will generate **lib.js** and **lib.wasm**.
+5. Now, compile the C++ code (**lip.cpp**) to WebAssembly, which will generate **lib.js** and **lib.wasm** in the build directory.
 - **Linux/MacOS:**
 ```sh
 ./scripts/compile_cpp_to_wasm.sh 
@@ -75,7 +75,7 @@ scripts/compile_cpp_to_wasm.bat
 
 ### Three.js
 
-1. Navigate to the root directory of the project, which called the webassembly-threejs-research folder.
+1. Navigate to the root directory of the project, which called the **webassembly-threejs-research** folder.
 ```sh
 cd webassembly-threejs-research/
 ```
