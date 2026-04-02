@@ -25,6 +25,10 @@ class DebugGUI {
             
             particles: {
                 input: {
+                    typeLanguage: {
+                        default: 'js',
+                        options: ['c++','rust', 'js']
+                    },
                     type: {
                         default: 'points',
                         options: ['points','cubes']
