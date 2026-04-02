@@ -111,6 +111,7 @@ cargo install wasm-pack --version 0.14.0
 ```sh
 scripts/compile_rust_to_wasm.bat 
 ```
+*Note: The shell and batch files use the wasm-pack command to compile Rust code to WebAssembly.*
 
 6. Done! JavaScript will now import the **lib.js** file from the `build/rust` directory.
 
