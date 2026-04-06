@@ -3,11 +3,12 @@ import * as THREE from 'three';
 class Particles {
     static #COMPONENTS = 3;
 
-    constructor({ type = 'cubes', count = 100, spread = 50, speed = 5, size = 0.5, color = 0x00ff00, wireframe = false, isBounceable = true } = {}) {
-        this.#createSetup({type, count, spread, speed, size, color, wireframe, isBounceable});
+    constructor({ module = null, type = 'cubes', count = 100, spread = 50, speed = 5, pushApart = 0.1, size = 0.5, color = 0x00ff00, wireframe = false, isBounceable = true } = {}) {
+        this.#createSetup({module, type, count, spread, speed, pushApart, size, color, wireframe, isBounceable});
     }
 
-    #createSetup({type, count, spread, speed, pushApart, size, color, wireframe, isBounceable}) {
+    #createSetup({module, type, count, spread, speed, pushApart, size, color, wireframe, isBounceable}) {
+        this.module = module;
         this.type = type;
         this.count = count;   
         this.speed = speed;
@@ -22,8 +23,41 @@ class Particles {
 
     #createGeometry({type, size, count, spread} = {}) {
         const particlesIndexLength = count * Particles.#COMPONENTS;
-        const positionArray = new Float32Array(particlesIndexLength);
-        const velocityArray = new Float32Array(particlesIndexLength);
+        let positionArray = null;
+        let velocityArray = null;
+
+        // If a module (C++/Rust) is available, then allocate memory for position and velocity pointers; otherwise use JS without allocating memory
+        if(this.module.myModule) {
+            const floatByte = 4;  // 4 bytes per float (Float32Array)
+            this.bytes = particlesIndexLength * floatByte;
+            let wasmMemoryBuffer = null;
+            
+            // If C++ module is available, then use its memory; otherwise fallback to Rust implementation
+            if(this.module.typeLanguage === "c++") {
+                // Allocate the memory bytes
+                this.positionOffset = this.module.myModule._malloc(this.bytes);
+                this.velocityOffset = this.module.myModule._malloc(this.bytes);
+                
+                // Get memory buffer from wasm
+                wasmMemoryBuffer = this.module.myModule.HEAPF32.buffer; // ~16 MB by default (depends on Emscripten flags like INITIAL_MEMORY or ALLOW_MEMORY_GROWTH)
+            } else if(this.module.typeLanguage === "rust") {
+                // Allocate the memory bytes
+                this.positionOffset = this.module.myModule.alloc(this.bytes);
+                this.velocityOffset = this.module.myModule.alloc(this.bytes);
+                
+                // Get memory buffer from wasm
+                // Note: Memory grows automatically as needed (e.g., ~1.125MB for ~1000 particles, ~1.375MB for ~10000 particles). Memory can grow but cannot shrink.
+                wasmMemoryBuffer = this.module.myModule.memory.buffer; // WebAssembly linear memory buffer (auto-growing by default)
+            }
+
+            // Create views into Wasm memory
+            // e.g Buffer: ~16 MB, byteOffset: 71752, length: 30 * 4 = 120 bytes, the array view covers 120 bytes of the buffer
+            positionArray = new Float32Array(wasmMemoryBuffer, this.positionOffset, particlesIndexLength); 
+            velocityArray = new Float32Array(wasmMemoryBuffer, this.velocityOffset, particlesIndexLength);
+        } else {
+            positionArray = new Float32Array(particlesIndexLength);
+            velocityArray = new Float32Array(particlesIndexLength);
+        }
         
         this.boxBounds = spread / 2; // Half the spread. Example: if spread is 10, then box in range is -5 and 5
         for (let i = 0; i < positionArray.length; i++) {
@@ -85,17 +119,40 @@ class Particles {
         return Math.random() * (max - min) + min;
     }
 
-    updateSetup({type, count, spread, speed, pushApart, size, color, wireframe, isBounceable} = {}) {
-        if(this.mesh) {
-            this.#disposeMesh();
-        }
+    updateSetup({module, type, count, spread, speed, pushApart, size, color, wireframe, isBounceable} = {}) {
+        this.#disposeMesh();
+        this.#disposeWasm();
 
-        this.#createSetup({type, count, spread, speed, pushApart, size, color, wireframe, isBounceable})
+        this.#createSetup({module, type, count, spread, speed, pushApart, size, color, wireframe, isBounceable})
     }
 
     #disposeMesh() {
-        this.mesh.geometry.dispose();
-        this.mesh.material.dispose();
+        if(this.mesh) {
+            this.mesh.geometry.dispose();
+            this.mesh.material.dispose();
+        }
+    }
+    
+    #disposeWasm() {
+        if(this.module.myModule) {
+            if(this.module.typeLanguage === "c++") {
+                // Free WASM memory
+                this.module.myModule._free(this.positionOffset);
+                this.module.myModule._free(this.velocityOffset);
+                
+                // Avoid dangling pointer
+                this.positionOffset = null;
+                this.velocityOffset = null;
+            } else if(this.module.typeLanguage === "rust") {
+                // Free WASM memory
+                this.module.myModule.free(this.positionOffset, this.bytes);
+                this.module.myModule.free(this.velocityOffset, this.bytes);
+
+                // Avoid dangling pointer
+                this.positionOffset = null;
+                this.velocityOffset = null;
+            }
+        }
     }
 
     getGeometry() {
@@ -103,22 +160,59 @@ class Particles {
     }
 
     update(deltaTime) {
-        const {type, count, speed, pushApart, size, boxBounds, positionArray, velocityArray, mesh, isBounceable} = this;
+        const {type, count, speed, pushApart, size, boxBounds, positionArray, velocityArray, mesh, isBounceable, positionOffset, velocityOffset} = this;
 
-        this.#updateParticlePhysics(count, Particles.#COMPONENTS, positionArray, velocityArray, speed, boxBounds, deltaTime)
+        // If there is no module (C++ and Rust), then use JS methods
+        if(this.module.myModule) {
+            if(this.module.typeLanguage === "c++") {
+                this.module.myModule.updateParticlePhysics(count, Particles.#COMPONENTS, positionOffset, velocityOffset, speed, boxBounds, deltaTime);
+    
+                if (type == 'cubes') {
+                    for (let particle = 0; particle < count; particle++) { 
+                        this.#updateCubeParticle(particle, positionArray, mesh);
+                    }
+    
+                    if (isBounceable) {
+                        this.module.myModule.updateCubeParticleCollision(positionOffset, velocityOffset, size, count, Particles.#COMPONENTS, pushApart);
+                    }
+    
+                    mesh.instanceMatrix.needsUpdate = true;
+                } else if (type == 'points') {
+                    mesh.geometry.attributes.position.needsUpdate = true;
+                }
+            } else if(this.module.typeLanguage === "rust") {
+                this.module.myModule.update_particle_physics(count, Particles.#COMPONENTS, positionOffset, velocityOffset, speed, boxBounds, deltaTime);
+    
+                if (type == 'cubes') {
+                    for (let particle = 0; particle < count; particle++) { 
+                        this.#updateCubeParticle(particle, positionArray, mesh);
+                    }
+    
+                    if (isBounceable) {
+                        this.module.myModule.update_cube_particle_collision(positionOffset, velocityOffset, size, count, Particles.#COMPONENTS, pushApart);
+                    }
+    
+                    mesh.instanceMatrix.needsUpdate = true;
+                } else if (type == 'points') {
+                    mesh.geometry.attributes.position.needsUpdate = true;
+                }
+            }
+        } else {
+            this.#updateParticlePhysics(count, Particles.#COMPONENTS, positionArray, velocityArray, speed, boxBounds, deltaTime)
             
-        if (type == 'cubes') {
-            for (let particle = 0; particle < count; particle++) { 
-                this.#updateCubeParticle(particle, positionArray, mesh);
+            if (type == 'cubes') {
+                for (let particle = 0; particle < count; particle++) { 
+                    this.#updateCubeParticle(particle, positionArray, mesh);
+                }
+    
+                if (isBounceable) {
+                    this.#updateCubeParticleCollision(positionArray, velocityArray, size, count, Particles.#COMPONENTS, pushApart);
+                }
+    
+                mesh.instanceMatrix.needsUpdate = true;
+            } else if (type == 'points') {
+                mesh.geometry.attributes.position.needsUpdate = true;
             }
-
-            if (isBounceable) {
-                this.#updateCubeParticleCollision(positionArray, velocityArray, size, count, Particles.#COMPONENTS, pushApart);
-            }
-
-            mesh.instanceMatrix.needsUpdate = true;
-        } else if (type == 'points') {
-            mesh.geometry.attributes.position.needsUpdate = true;
         }
     }
 
