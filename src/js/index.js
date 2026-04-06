@@ -3,15 +3,18 @@ import { ThreeApp } from './threeApp';
 import { DebugGUI } from './debugGUI';
 import { FPSCounter } from './fpsCounter';
 import { Particles } from './particles';
+import createModule from "../../build/c++/lib.js";
+import init from "../../build/rust/lib.js";
 
 const container = document.body;
 
 if (WebGL.isWebGL2Available()) {  
   const debugGUI = new DebugGUI({container: container.canvas});
-  const { type, count, spread, speed, pushApart, size, pointcolor: color, cubeWireframe: wireframe, cubeBounceable: isBounceable } = debugGUI.object.particles.input;
+  const { typeLanguage, type, count, spread, speed, pushApart, size, pointcolor: color, cubeWireframe: wireframe, cubeBounceable: isBounceable } = debugGUI.object.particles.input;
   const { cameraSpeed, enableControls, antialias, running: isRunning } = debugGUI.object.threeApp.input;
+  const module = await getModule(typeLanguage);
   
-  let particles = new Particles({ type: type.default, count, spread, speed, pushApart, size, color, wireframe, isBounceable });
+  let particles = new Particles({ module, type: type.default, count, spread, speed, pushApart, size, color, wireframe, isBounceable });
   const fpsCounter = new FPSCounter();
   const threeApp = new ThreeApp({debugGUI, fpsCounter});
 
@@ -26,13 +29,30 @@ if (WebGL.isWebGL2Available()) {
     threeApp.updateCamera({aspect: window.innerWidth / window.innerHeight});
   })
 
-  function update(object) {
-    const { type, count, spread, speed, pushApart, size, pointcolor: color, cubeWireframe: wireframe, cubeBounceable: isBounceable } = object.particles.input;
+  async function getModule(typeLanguage) {
+    let module = {};
+    
+    if(typeLanguage.default === 'c++') {
+      module.typeLanguage = typeLanguage.default;
+      module.myModule = await createModule(); // Initialize the WASM module
+    } else if(typeLanguage.default === 'rust') {
+      module.typeLanguage = typeLanguage.default;
+      module.myModule = await init(); // Initialize the WASM module
+    } else if (typeLanguage.default === 'js') {
+      module.typeLanguage = typeLanguage.default;
+      module.myModule = null;
+    }
+    return module;
+  }
+
+  async function update(object) {
+    const { typeLanguage, type, count, spread, speed, pushApart, size, pointcolor: color, cubeWireframe: wireframe, cubeBounceable: isBounceable } = object.particles.input;
     const { backgroundcolor, fov, near, far, cameraX, cameraY, cameraZ, cameraSpeed, enableControls, antialias, running: isRunning } = object.threeApp.input;
+    const module = await getModule(typeLanguage);
 
     // Update Particles
     threeApp.removeScene();
-    particles.updateSetup({ type: type.default, count, spread, speed, pushApart, size, color, wireframe, isBounceable });
+    particles.updateSetup({ module, type: type.default, count, spread, speed, pushApart, size, color, wireframe, isBounceable });
     threeApp.addScene(particles);
 
     // Update ThreeApp
