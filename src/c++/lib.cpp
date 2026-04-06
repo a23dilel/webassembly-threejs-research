@@ -1,100 +1,96 @@
-#include <algorithm>
 #include <emscripten/bind.h> 
+#include <algorithm>
+#include <cstdint>
 
-void updateParticlePhysics(int count, int maxComponents, emscripten::val positionArray, emscripten::val velocityArray, float speed, float boxBounds, float deltaTime) {
+void updateParticlePhysics(uint32_t count, uint32_t maxComponents, uint32_t positionOffset, uint32_t velocityOffset, float speed, float boxBounds, float deltaTime) {
+    float* positionArray = (float*)(uintptr_t)positionOffset;
+    float* velocityArray = (float*)(uintptr_t)velocityOffset;
+    
     // Loop through each particle
-    for (int particle = 0; particle < count; particle++) {
-        const int particleIndex = particle * maxComponents;
+    for (uint32_t particle = 0; particle < count; particle++) {
+        const uint32_t particleIndex = particle * maxComponents;
 
         // Loop through x, y, z from particle
-        for (int component = 0; component < maxComponents; component++) {
+        for (uint32_t component = 0; component < maxComponents; component++) {
             // Get each x, y and z
-            const int componentIndex = particleIndex + component;
+            const uint32_t componentIndex = particleIndex + component;
 
             // Update each x, y and z
-            const float position = positionArray[componentIndex].as<float>() + (velocityArray[componentIndex].as<float>() * speed) * deltaTime;
-            positionArray.set(componentIndex, position);
+            const float position = positionArray[componentIndex] + (velocityArray[componentIndex] * speed) * deltaTime;
+            positionArray[componentIndex] = position;
 
             // If particle's x, y or z hits box border, then reverse direction
             if (position <= -boxBounds || position >= boxBounds) {
                 const float upperClamped = std::min(boxBounds, position);
                 const float lowerClamped = std::max(-boxBounds, upperClamped);
                 
-                const int reverseDirection = -1;
-                positionArray.set(componentIndex, lowerClamped);
-                velocityArray.set(componentIndex, velocityArray[componentIndex].as<float>() * reverseDirection);
+                const float reverseDirection = -1.0f;
+                positionArray[componentIndex] = lowerClamped;
+                velocityArray[componentIndex] *= reverseDirection;
             }
         }
     }
 }
 
-bool intersectsBox(emscripten::val a,  emscripten::val b) {
-    emscripten::val aMin = a["min"];
-    emscripten::val aMax = a["max"];  
-    emscripten::val bMin = b["min"];
-    emscripten::val bMax = b["max"];
-    
-    float aMinX = aMin["x"].as<float>();
-    float aMaxX = aMax["x"].as<float>();
-    float bMinX = bMin["x"].as<float>();
-    float bMaxX = bMax["x"].as<float>();
-
-    float aMinY = aMin["y"].as<float>();
-    float aMaxY = aMax["y"].as<float>();
-    float bMinY = bMin["y"].as<float>();
-    float bMaxY = bMax["y"].as<float>();
-
-    float aMinZ = aMin["z"].as<float>();
-    float aMaxZ = aMax["z"].as<float>();
-    float bMinZ = bMin["z"].as<float>();
-    float bMaxZ = bMax["z"].as<float>();
+bool intersectsBox(float aX, float aY, float aZ, float bX, float bY, float bZ, float size) {
+    const float halfSize = size / 2.0f;
 
     // If there is no overlap between a and b, return false
-    if (aMaxX < bMinX || aMinX > bMaxX) return false;
-    if (aMaxY < bMinY || aMinY > bMaxY) return false;
-    if (aMaxZ < bMinZ || aMinZ > bMaxZ) return false;
+    if (aX + halfSize < bX - halfSize || aX - halfSize > bX + halfSize) { return false; };
+    if (aY + halfSize < bY - halfSize || aY - halfSize > bY + halfSize) { return false; };
+    if (aZ + halfSize < bZ - halfSize || aZ - halfSize > bZ + halfSize) { return false; };
 
     // If there is overlap between a and b, return true
     return true;
 }
 
-void updateCubeParticleHitBoxes(emscripten::val hitBoxes, int maxComponents, emscripten::val positionArray, emscripten::val velocityArray, float pushApart) {
-    const int hitBoxesLength = hitBoxes["length"].as<int>();
-    
-    for(int firstHitBox = 0; firstHitBox < hitBoxesLength; firstHitBox++) {
-        const int nextHitBox = 1;
-        for(int secondHitBox = firstHitBox + nextHitBox; secondHitBox < hitBoxesLength; secondHitBox++) {
-            
-            // If cube particle hits another particle cube, then reverse direction
-            if(intersectsBox(hitBoxes[firstHitBox], hitBoxes[secondHitBox])) {
-                const int firstCubeHitBoxIndex = firstHitBox * maxComponents;
-                const int secondCubeHitBoxIndex = secondHitBox * maxComponents;
-                const int cubeHitBoxes[2] = {firstCubeHitBoxIndex, secondCubeHitBoxIndex};
-                const int cubeHitBoxesLength = sizeof(cubeHitBoxes) / sizeof(cubeHitBoxes[0]);
-               
-                for(int cubeHitBox = 0; cubeHitBox < cubeHitBoxesLength; cubeHitBox++) {
-                    for (int component = 0; component < maxComponents; component++) {
-                        // Get hitBox's x, y and z 
-                        const int componentIndex = cubeHitBoxes[cubeHitBox] + component;
+void updateCubeParticleCollision(uint32_t positionOffset, uint32_t velocityOffset, float size, uint32_t count, uint32_t maxComponents, float pushApart) {
+    float* positionArray = (float*)(uintptr_t)positionOffset;
+    float* velocityArray = (float*)(uintptr_t)velocityOffset;
 
+    const uint32_t positionArrayLength = count * maxComponents;
+        
+    // Loop through all particles A
+    for (uint32_t particleA = 0; particleA < positionArrayLength; particleA += maxComponents) {
+        const uint32_t nextParticle = maxComponents;
+
+        // Loop through all particles after particles A
+        for(uint32_t particleB = particleA + nextParticle; particleB < positionArrayLength; particleB += maxComponents) {
+            const float aX = positionArray[particleA + 0];
+            const float aY = positionArray[particleA + 1];
+            const float aZ = positionArray[particleA + 2];
+
+            const float bX = positionArray[particleB + 0];
+            const float bY = positionArray[particleB + 1];
+            const float bZ = positionArray[particleB + 2];
+
+            // If cube particle hits another particle cube, then reverse direction depending on which componets hits
+            if(intersectsBox(aX, aY, aZ, bX, bY, bZ, size)) {
+                const uint32_t particles[2] = {particleA, particleB};
+                const uint32_t particleLength = sizeof(particles) / sizeof(particles[0]);
+
+                for(uint32_t particle = 0; particle < particleLength; particle++) {
+                    for (uint32_t component = 0; component < maxComponents; component++) {
+                        // Get each particle's x, y and z 
+                        const uint32_t componentIndex =  particles[particle] + component;
+                        
                         // Make cube particles bounce away from each other
                         // Reverse the cube particle's x, y, z velocity
-                        const int reverseDirection = -1;
-                        const float cubeVel = velocityArray[componentIndex].as<float>() * reverseDirection;
-                        velocityArray.set(componentIndex, cubeVel);
-                       
+                        const float reverseDirection = -1.0f;
+                        const float particleVel = velocityArray[componentIndex] * reverseDirection;
+                        velocityArray[componentIndex] = particleVel;
+
                         // Prevent two cube particles from sticking together (overlapping)
                         // Move the cube particle along its new velocity (x, y, z)
-                        const float position = positionArray[componentIndex].as<float>() + cubeVel * pushApart;
-                        positionArray.set(componentIndex, position);
+                        positionArray[componentIndex] += particleVel * pushApart;
                     }
-                }
+                } 
             }
         }
     }
 }
 
 EMSCRIPTEN_BINDINGS(my_module) { 
-  emscripten::function("updateParticlePhysics", &updateParticlePhysics);
-  emscripten::function("updateCubeParticleHitBoxes", &updateCubeParticleHitBoxes); 
+    emscripten::function("updateParticlePhysics", &updateParticlePhysics);
+    emscripten::function("updateCubeParticleCollision", &updateCubeParticleCollision); 
 } 
