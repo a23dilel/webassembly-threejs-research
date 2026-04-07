@@ -14,8 +14,7 @@ class FPSCounter {
         this.isPromptable = false;
     }
 
-    showPrompt() {
-        const hours = prompt("How many hours to mesure FPS?");
+    setHours(hours) {
         this.durationMs = Number(hours) * 60 * 60 * 1000;
         this.isPromptable = true;
     }
@@ -80,6 +79,30 @@ class FPSCounter {
 
         // Release the object
         URL.revokeObjectURL(objUrl);
+    }
+
+    #getTimeLeftMS() {
+        const nowTime = performance.now();
+        const elapsed = nowTime - this.initStartTime;
+        const left = this.durationMs - elapsed;
+        const limitLeft = Math.max(0, left);
+
+        return limitLeft;
+    }
+
+    getTimeLeft() {
+        const ms = this.#getTimeLeftMS();
+        
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        const hoursString = String(hours).padStart(2, "0");
+        const minutesString = String(minutes).padStart(2, "0");
+        const secondsString = String(seconds).padStart(2, "0");
+
+        return `${hoursString}:${minutesString}:${secondsString}`;
     }
 }
 
