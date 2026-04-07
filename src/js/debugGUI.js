@@ -59,6 +59,12 @@ class DebugGUI {
                     running: true
                 }
             },
+
+            measure: {
+                input: {
+                    fps: false
+                }
+            },
             
             presets: {
                 button: {
