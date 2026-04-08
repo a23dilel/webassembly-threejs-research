@@ -43,7 +43,7 @@ git clone https://github.com/a23dilel/webassembly-threejs-research.git
 
 1. Navigate to the root directory of the project, which called the **webassembly-threejs-research** folder.
 ```sh
-cd webassembly-threejs-research/
+cd webassembly-threejs-research
 ```
 
 2. Install the Emscripten SDK (emsdk) version 5.0.4 and activate it for the current user.
@@ -54,8 +54,10 @@ cd webassembly-threejs-research/
 
 - **Windows:**
 ```sh
-scripts/setup_emsdk.bat 
+call scripts\setup_emsdk.bat 
 ```
+*Note: You need to use the Command Prompt (CMD) to run the batch scripts. PowerShell is not supported.*
+
 *Note: The shell and batch files are set to install Emscripten SDK version 5.0.4.*
 
 3. Next is activate the PATH and other environment variables in the current terminal.
@@ -66,7 +68,7 @@ source ./emsdk/emsdk_env.sh
 
 - **Windows:**
 ```sh
-emsdk/emsdk_env.bat
+call emsdk\emsdk_env.bat
 ```
 *Note: You need to activate the PATH on Linux/macOS or Windows every time you open a new terminal to use Emscripten commands. Otherwise, the commands will not work.*
 
@@ -83,17 +85,17 @@ em++ -v
 
 - **Windows:**
 ```sh
-scripts/compile_cpp_to_wasm.bat 
+call scripts\compile_cpp_to_wasm.bat 
 ```
 *Note: The shell and batch files are set to compile C++17 using em++ with flags such as ENVIRONMENT, MODULARIZE and others.*
 
-6. Done! JavaScript will now import the **lib.js** file from the `build/c++` directory.
+6. Done! JavaScript will now import the **lib.js** file from the `build/c++` directory. Next step is wasm-pack!
 
 ### Wasm-pack
 
 1. Navigate to the root directory of the project, which called the **webassembly-threejs-research** folder.
 ```sh
-cd webassembly-threejs-research/
+cd webassembly-threejs-research
 ```
 
 2. Install wasm-pack version 0.14.0.
@@ -109,20 +111,20 @@ cargo install wasm-pack --version 0.14.0
 
 - **Windows:**
 ```sh
-scripts/compile_rust_to_wasm.bat 
+call scripts\compile_rust_to_wasm.bat 
 ```
 *Note: The shell and batch files use the wasm-pack command to compile Rust code to WebAssembly.*
 
-6. Done! JavaScript will now import the **lib.js** file from the `build/rust` directory.
+6. Done! JavaScript will now import the **lib.js** file from the `build/rust` directory. Now it's only left is to run three.js!
 
 ### Three.js
 
 1. Navigate to the root directory of the project, which called the **webassembly-threejs-research** folder.
 ```sh
-cd webassembly-threejs-research/
+cd webassembly-threejs-research
 ```
 
-2. Install the required dependencies. The project depends on Three.js, Vite and lil-gui, which are listed in package-lock.json.
+2. Install the required dependencies. The project depends on Three.js, Vite and lil-gui, which are listed in `package-lock.json` after running `npm install`.
 ```sh
 npm install
 ```
@@ -135,7 +137,7 @@ npx vite ./src/
 
 - **Windows:**
 ```sh
-npx vite src/
+npx vite src\
 ```
 
 4. After running the command, a local HTTP address will show in the terminal, which need to click the link or copy and paste it into your web browser's address bar, then press **Enter** to open the project. Here is an example of what a local HTTP address should look like in the terminal.
