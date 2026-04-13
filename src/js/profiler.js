@@ -1,4 +1,4 @@
-class FPSCounter {
+class Profiler {
     constructor({ responsiveFps = 1000 } = {}) {
         this.responsiveFps = responsiveFps;
         this.clear();
@@ -10,8 +10,12 @@ class FPSCounter {
         this.lastTime = 0;
         this.frames = 0;
         this.fps = 0;
-        this.fpsResults = [];
+        this.fpsRows = [];
         this.isPromptable = false;
+
+        // Execution time tracking
+        this.currentExec = {};
+        this.execRows = [];
     }
 
     setHours(hours) {
@@ -27,8 +31,8 @@ class FPSCounter {
         if (deltaTime >= this.responsiveFps) {
             this.fps = Math.round((this.frames * this.responsiveFps) / deltaTime);
             
-            this.fpsResults.push({
-                result: this.fps
+            this.fpsRows.push({
+                fps: this.fps
             })
 
             // Reset counters
@@ -46,6 +50,24 @@ class FPSCounter {
         return this.fps;
     }
 
+    startFrame() {
+        this.currentExec = {};
+    }
+
+    startExec(label) {
+        this.execStart = performance.now();
+        this.execLabel = label;
+    }
+
+    endExec() {
+        const time = performance.now() - this.execStart;
+        this.currentExec[this.execLabel] = time;
+    }
+
+    endFrame() {
+        this.execRows.push({ ...this.currentExec });
+    }
+
     start() {
         this.initStartTime = performance.now();
         this.lastTime = performance.now();
@@ -54,17 +76,39 @@ class FPSCounter {
 
     #stop() {
         this.isStopped = true;
-        this.#exportCSV();
+        this.#exportFPS();
+        this.#exportExecution();
     }
 
-    #exportCSV() {
-        let csv = "result\n";
+    #exportFPS() {
+        let csv = "fps\n";
 
-        // Add rows
-        this.fpsResults.forEach(row => {
-            csv += `${row.result}\n`;
+        // FPS rows
+        this.fpsRows.forEach(row => {
+            csv += `${row.fps}\n`;
         });
 
+        this.#exportCSV(csv, "fps.csv");
+    }
+
+    #exportExecution() {
+        const headers = Object.keys(this.execRows[0]);
+
+        let csv = headers.join(",") + "\n";
+        
+        // Execution time rows
+        this.execRows.forEach(row => {
+            const line = headers.map(header => 
+                row[header].toFixed(3)
+            ).join(",");
+
+            csv += line + `\n`;
+        });
+
+        this.#exportCSV(csv, "execution.csv");
+    }
+
+    #exportCSV(csv, filename) {
         // Create a blob
         const blob = new Blob([csv], { type: "text/csv" });
         const objUrl = URL.createObjectURL(blob);
@@ -72,7 +116,7 @@ class FPSCounter {
         // Create a link
         const link = document.createElement("a");
         link.href = objUrl;
-        link.download = "fps_results.csv";
+        link.download = filename;
 
         // Call download
         link.click();
@@ -106,4 +150,4 @@ class FPSCounter {
     }
 }
 
-export { FPSCounter }
+export { Profiler }
