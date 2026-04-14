@@ -49,7 +49,7 @@ class DebugGUI {
                     backgroundcolor: 0x000000,
                     fov: 75, 
                     near: 0.1, 
-                    far: 1000, 
+                    far: 100, 
                     cameraX: 0, 
                     cameraY: 0, 
                     cameraZ: 60,
