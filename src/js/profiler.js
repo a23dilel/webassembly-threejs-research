@@ -11,7 +11,7 @@ class Profiler {
         this.frames = 0;
         this.fps = 0;
         this.fpsRows = [];
-        this.isPromptable = false;
+        this.isSetHour = false;
 
         // Execution time tracking
         this.currentExec = {};
@@ -20,7 +20,7 @@ class Profiler {
 
     setHours(hours) {
         this.durationMs = Number(hours) * 60 * 60 * 1000;
-        this.isPromptable = true;
+        this.isSetHour = true;
     }
 
     measureFPS() {
@@ -42,7 +42,7 @@ class Profiler {
             this.lastTime = nowTime;
         }
 
-        if(this.isPromptable) {
+        if(this.isSetHour) {
             if (!this.isStopped && (nowTime - this.initStartTime >= this.durationMs)) {
                 this.#stop();
                 return;
