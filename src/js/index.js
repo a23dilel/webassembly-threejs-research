@@ -12,14 +12,14 @@ if (WebGL.isWebGL2Available()) {
   const debugGUI = new DebugGUI({container: container.canvas});
   const { typeLanguage, type, count, spread, speed, cubePushApart: pushApart, size, pointcolor: color, cubeWireframe: wireframe, cubeBounceable: isBounceable } = debugGUI.object.particles.input;
   const { cameraSpeed, enableControls, antialias, running: isRunning } = debugGUI.object.threeApp.input;
-  const { profiler: isProfiler, hours } = debugGUI.object.measure.input;
+  const { profiler: isProfiler, hours, iterations } = debugGUI.object.measure.input;
   const module = await getModule(typeLanguage);
   
   let particles = new Particles({ module, type: type.default, count, spread, speed, pushApart, size, color, wireframe, isBounceable });
   const profiler = new Profiler();
   
   if(isProfiler) {
-    profiler.setHours(hours);
+    profiler.setHours(hours, iterations);
     profiler.start();
 
     // Check time left every second
@@ -62,12 +62,12 @@ if (WebGL.isWebGL2Available()) {
   async function update(object) {
     const { typeLanguage, type, count, spread, speed, cubePushApart: pushApart, size, pointcolor: color, cubeWireframe: wireframe, cubeBounceable: isBounceable } = object.particles.input;
     const { backgroundcolor, fov, near, far, cameraX, cameraY, cameraZ, cameraSpeed, enableControls, antialias, running: isRunning } = object.threeApp.input;
-    const {  profiler: isProfiler, hours } = object.measure.input;
+    const {  profiler: isProfiler, hours, iterations } = object.measure.input;
     const module = await getModule(typeLanguage);
 
     profiler.clear();
     if(isProfiler) {
-      profiler.setHours(hours);
+      profiler.setHours(hours, iterations);
       profiler.start();
       
       // Check time left every second

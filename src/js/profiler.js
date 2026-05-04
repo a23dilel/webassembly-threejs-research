@@ -18,9 +18,25 @@ class Profiler {
         this.execRows = [];
     }
 
-    setHours(hours) {
+    setHours(hours = 1, iterations = 0) {
+        this.hours = hours;
+        this.iterations = iterations;
+        this.currentIteration = 0;
         this.durationMs = Number(hours) * 60 * 60 * 1000;
         this.isSetHour = true;
+    }
+
+    nextIteration() {
+        this.currentIteration++;
+        
+        if (this.currentIteration < this.iterations) {
+            this.clear();
+            this.durationMs = Number(this.hours) * 60 * 60 * 1000;
+            this.isSetHour = true;
+            this.start();
+        } else {
+            this.isSetHour = false;
+        }
     }
 
     measureFPS() {
@@ -45,6 +61,7 @@ class Profiler {
         if(this.isSetHour) {
             if (!this.isStopped && (nowTime - this.initStartTime >= this.durationMs)) {
                 this.#stop();
+                this.nextIteration()
                 return;
             }
         }
@@ -90,7 +107,7 @@ class Profiler {
             csv += `${row.fps}\n`;
         });
 
-        this.#exportCSV(csv, "fps.csv");
+        this.#exportCSV(csv, this.currentIteration + "fps.csv");
     }
 
     #exportExecution() {
@@ -107,7 +124,7 @@ class Profiler {
             csv += line + `\n`;
         });
 
-        this.#exportCSV(csv, "execution.csv");
+        this.#exportCSV(csv, this.currentIteration + "execution.csv");
     }
 
     #exportCSV(csv, filename) {

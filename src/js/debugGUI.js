@@ -63,7 +63,8 @@ class DebugGUI {
             measure: {
                 input: {
                     profiler: false,
-                    hours: 1
+                    hours: 1,
+                    iterations: 0
                 },
                 display: {
                     timeLeftDisplay: 0
