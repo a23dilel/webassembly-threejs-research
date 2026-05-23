@@ -1,0 +1,6 @@
+Snapshot;ArrayBuffer Size (MB);Total Heap Memory (MB);Heap without ArrayBuffer Size (MB);ArrayBuffer % of Total
+Snapshot 1;17,57;27,5;9,93;63,89%
+Snapshot 2;17,57;27,9;10,33;62,97%
+Snapshot 3;17,57;28,2;10,63;62,30%
+Snapshot 4;17,57;28,6;11,03;61,43%
+Snapshot 5;17,57;28,7;11,13;61,22%
